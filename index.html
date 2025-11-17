@@ -1,452 +1,139 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>АйТи-группа ATK 24-51</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --accent: #2b90d9;
-            --active: #1c6baf;
-            --nav-bg: #181e2a;
-            --main-bg: #f8fbff;
-            --block-bg: #fff;
-            --shadow: 0 4px 22px rgb(43 144 217 / 10%);
-            --radius: 15px;
-            --border: #e3e3ea;
-        }
-        body {
-            font-family: 'Montserrat', Arial, sans-serif;
-            background: var(--main-bg);
-            margin: 0;
-            color: #222;
-            min-height: 100vh;
-        }
-        header {
-            background: linear-gradient(90deg, var(--accent) 12%, #6bc6ff 120%);
-            color: white;
-            padding: 37px 0 20px 0;
-            text-align: center;
-            box-shadow: var(--shadow);
-        }
-        header h1 {
-            font-size: 2.1em;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            margin: 0 0 12px 0;
-            font-weight: 700;
-        }
-        header p {
-            font-size: 1.17em;
-            margin: 0;
-        }
-        nav {
-            background: var(--nav-bg);
-            display: flex;
-            justify-content: center;
-            box-shadow: var(--shadow);
-        }
-        nav button {
-            background: none;
-            color: #f0f6ff;
-            padding: 17px 30px;
-            border: none;
-            cursor: pointer;
-            font-size: 1.12em;
-            margin: 0 3px;
-            letter-spacing: 1px;
-            border-top-left-radius: 10px;
-            border-top-right-radius: 10px;
-            font-weight: 700;
-            transition: background 0.2s;
-        }
-        nav button.active, nav button:hover {
-            background: var(--accent);
-            color: #fff;
-        }
-        .tab-content { display: none; padding: 30px 8vw; max-width: 1050px; margin: 0 auto;}
-        .tab-content.active { display: block; animation: fadein 0.3s;}
-        @keyframes fadein { from { opacity: 0; } to   { opacity: 1; } }
-        .block {
-            background: var(--block-bg);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            padding: 30px 25px 18px 25px;
-            margin-bottom: 30px;
-            border: 1px solid var(--border);
-        }
-        /* О группе */
-        .about-main {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 24px;
-            align-items: flex-start;
-        }
-        .about-illu {
-            width: 210px;
-            flex-shrink: 0;
-        }
-        .about-illu img { width: 100%; border-radius: 18px; box-shadow: 0 8px 30px #b2e1fd77;}
-        .about-desc h2 {
-            margin-top:0;font-size:1.5em;color:var(--accent);
-        }
-        /* Расписание */
-        .schedule-table {
-            width: 100%;
-            border-collapse: collapse;
-            background: #f4f8ff;
-            border-radius: var(--radius);
-            box-shadow: 0 2px 16px #b4def733;
-            overflow: hidden;
-            margin-bottom:0;
-        }
-        .schedule-table th, .schedule-table td {
-            padding: 10px 6px;
-            border: 1px solid #dce5ef;
-            text-align: center;
-            font-size: 1em;
-        }
-        .schedule-table th {
-            background: var(--accent);
-            color: #fff;
-            font-weight: 600;
-            border: none;
-            font-size: 1.06em;
-        }
-        .schedule-table td.subject {
-            font-weight: 500;
-            color: #187fb7;
-            background: #e5f3ff;
-        }
-        .schedule-table td.teacher {
-            font-size: 0.95em;
-            color: #374359;
-        }
-        /* Новости */
-        .news-list {margin:0;padding:0;}
-        .news-list li {
-            display: flex; align-items: flex-start;
-            margin-bottom: 22px; gap:18px;
-            background: #e9f6fdab;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px #b2e1fd33;
-            padding: 10px 15px;
-            border: 1px solid #d4e6f7;
-            list-style: none;
-        }
-        .news-list img {
-            width:80px; height:80px; object-fit:cover;
-            border-radius:8px; box-shadow:0 0 8px #b2e1fd66;
-        }
-        .news-text {font-size:1.09em;flex:1;}
-        .news-text strong {color:var(--accent);}
-        .news-list button {
-            background: #e74c3c; color:#fff;
-            border:none; border-radius:5px;
-            padding: 7px 10px; font-size:0.9em;
-            cursor:pointer;margin-left:8px;font-weight:bold;
-            margin-top: 22px;
-        }
-        #add-news-btn { margin-top:13px; background:var(--accent); color:#fff; font-weight:bold; border:none; padding:10px 16px; border-radius:10px; cursor:pointer;}
-        /* Галерея */
-        .gallery-container { display:flex; gap:13px; flex-wrap:wrap; }
-        .gallery-container img {width:180px; height:120px; object-fit:cover; border-radius:9px; cursor:pointer;box-shadow:0 4px 20px #b2e1fd40;}
-        #add-photo-btn { margin-top:12px; background:var(--accent);color:#fff;font-weight:bold;border:none;padding:10px 16px;border-radius:10px;cursor:pointer;}
-        #gallery-modal {display:none; position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(26,88,122,0.86);justify-content:center;align-items:center;z-index:900;}
-        #gallery-modal img {max-width:94vw;max-height:86vh;border-radius:16px;box-shadow:0 8px 40px #88c9ef;}
-        #gallery-modal span {position:absolute;top:38px;right:48px;color:#fff;font-size:34px;cursor:pointer;}
-        /* Контакты */
-        .contact-form {max-width:420px; margin-top:14px;}
-        .contact-form input, .contact-form textarea {width:100%;padding:10px;margin-bottom:13px;border:1px solid #bbd0ee;border-radius:6px;font-size:1.05em;background:#eff7fe;}
-        .contact-form button {background:var(--accent);color:#fff;border:none;padding:12px 24px;border-radius:8px;font-size:1.07em;font-weight:bold;cursor:pointer;}
-        .contacts-list li {margin-bottom:9px;}
-        .tg-link {
-            display: inline-block; background:#229ed9; color:#fff;
-            padding:6px 12px; border-radius:5px; text-decoration: none;
-            font-weight: bold; font-size:1.05em; letter-spacing:0.5px; margin-left:2px;
-        }
-        #notification {position:fixed;bottom:30px;left:50%; transform:translateX(-50%);
-            background:var(--accent);color:#fff;
-            padding:15px 35px;border-radius:12px;
-            box-shadow:0 2px 14px #2b90d93a;z-index:1000;display:none;font-size:1.15em;}
-        footer {
-            background: var(--nav-bg); color: white; text-align: center;
-            padding: 16px 0 7px 0; margin-top:48px; letter-spacing:1px;font-size:1.08em;
-        }
-        @media screen and (max-width:950px){
-            .tab-content{padding:16px 2vw;}
-            .about-main{flex-direction:column;}
-            .about-illu{width:100%;text-align:center;}
-            .block{padding:18px 8px;}
-        }
-        @media screen and (max-width:650px){
-            nav button{padding:10px 9px;}
-            .gallery-container img{width:96px;height:68px;}
-            .contact-form{max-width:97vw;}
-            .schedule-table {font-size:0.9em;}
-            .news-list img { width:49px; height:49px;}
-        }
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>АйТи-группа ATK 24-51</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-    <header>
-        <h1>АйТи-группа ATK 24-51</h1>
-        <p>Твой билет в мир настоящих технологий! <br> Автоматизируем, программируем, придумываем, тестируем и делаем мир лучше.</p>
-    </header>
-    <nav id="nav-tabs">
-        <button class="active" data-tab="about">О группе</button>
-        <button data-tab="schedule">Расписание</button>
-        <button data-tab="news">Новости</button>
-        <button data-tab="gallery">Галерея</button>
-        <button data-tab="contacts">Контакты</button>
-    </nav>
-    <section id="about" class="tab-content active">
-        <div class="block about-main">
-            <div class="about-illu">
-                <img src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=400&q=80"
-                alt="IT students illustration">
+  <a class="skip-link" href="#main">Перейти к содержимому</a>
+  <header class="site-header" role="banner">
+    <div class="container header-inner">
+      <div>
+        <h1>АйТи‑группа ATK 24‑51</h1>
+        <p class="lead">Твой билет в мир настоящих технологий — программируем, автоматизируем, создаём.</p>
+      </div>
+      <nav aria-label="Основная навигация" id="top-nav">
+        <button class="tab-btn active" data-tab="about">О группе</button>
+        <button class="tab-btn" data-tab="schedule">Расписание</button>
+        <button class="tab-btn" data-tab="news">Новости</button>
+        <button class="tab-btn" data-tab="gallery">Галерея</button>
+        <button class="tab-btn" data-tab="contacts">Контакты</button>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <section id="about" class="tab-panel active container" aria-labelledby="О группе">
+      <div class="card about">
+        <img src="assets/team.svg" alt="Группа студентов" />
+        <div>
+          <h2>Кто мы?</h2>
+          <p>Мы — команда ATK 24‑51. Айтишники нового поколения: учим C++, Python, JavaScript, строим базы данных и крутые сайты.</p>
+          <ul>
+            <li><strong>Темы:</strong> программирование, автоматизация, базы данных, кибербезопасность</li>
+            <li><strong>Мероприятия:</strong> хакатоны, мастер-классы, совместные проекты</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="schedule" class="tab-panel container" hidden>
+      <div class="card">
+        <h2>Расписание на неделю</h2>
+        <div class="table-wrap" tabindex="0">
+          <table class="schedule-table" aria-describedby="schedule-desc">
+            <caption id="schedule-desc">Расписание занятий группы ATK 24‑51</caption>
+            <thead>
+              <tr><th>День</th><th>Время</th><th>Предмет</th><th>Преподаватель</th><th>Аудитория</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Понедельник</td><td>09:00–10:20</td><td>Дискретные структуры (лекция)</td><td>Кулдашева Н.К.</td><td>101</td></tr>
+              <tr><td>Понедельник</td><td>10:30–11:50</td><td>Электроника</td><td>Акрамов Н.С.</td><td>202</td></tr>
+              <tr><td>Вторник</td><td>09:00–10:20</td><td>Базы данных</td><td>Мусаджанова Д.А.</td><td>404</td></tr>
+              <tr><td>Среда</td><td>14:00–15:20</td><td>Компьютерные сети</td><td>Насриддинов Б.З.</td><td>307</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="news" class="tab-panel container" hidden>
+      <div class="card">
+        <div class="card-head">
+          <h2>Новости и события</h2>
+          <div class="news-controls">
+            <input id="news-search" type="search" placeholder="Поиск по новостям..." aria-label="Поиск по новостям" />
+            <button id="add-news" class="btn">Добавить новость</button>
+          </div>
+        </div>
+        <ul id="news-list" class="news-list" aria-live="polite"></ul>
+      </div>
+
+      <!-- News modal -->
+      <div id="news-modal" class="modal" aria-hidden="true" role="dialog" aria-modal="true">
+        <div class="modal-content">
+          <button class="modal-close" aria-label="Закрыть">&times;</button>
+          <h3 id="modal-title">Добавить / Редактировать новость</h3>
+          <form id="news-form">
+            <label>Текст новости
+              <textarea id="news-text" required rows="4"></textarea>
+            </label>
+            <label>Изображение (URL или файл)
+              <input id="news-image-url" type="url" placeholder="https://..." />
+              <input id="news-image-file" type="file" accept="image/*" />
+            </label>
+            <div class="modal-actions">
+              <button type="submit" class="btn primary">Сохранить</button>
+              <button type="button" class="btn" id="modal-cancel">Отмена</button>
             </div>
-            <div class="about-desc">
-                <h2>Кто мы?</h2>
-                <p>
-                Мы — команда ATK 24-51. <br>
-                Айтишники нового поколения: учим C++, Python, JavaScript, строим базы данных и крутые сайты, мечтаем попасть в Google (или создавать свой стартап).<br>
-                У нас весело: проводим внутренние хакатоны, ходим на мастер-классы, делимся мемами и идеями.<br>
-                Главное — всегда друг другу помогаем, потому что одна строка кода может изменить всё.<br>
-                Следи за нашими новостями — мы готовимся к новым победам!
-                </p>
-                <ul>
-                    <li><b>Темы</b>: программирование, автоматизация, математика, электроника, базы данных, кибербезопасность</li>
-                    <li><b>Мероприятия</b>: конкурсы, олимпиады, практики на предприятиях, совместные проекты</li>
-                </ul>
-            </div>
+          </form>
         </div>
+      </div>
     </section>
-    <section id="schedule" class="tab-content">
-        <div class="block">
-            <h2 style="color:var(--accent);margin-top:0;">Расписание на неделю</h2>
-            <table class="schedule-table">
-                <tr>
-                    <th>День</th>
-                    <th>Время</th>
-                    <th>Предмет</th>
-                    <th>Преподаватель</th>
-                    <th>Аудитория</th>
-                </tr>
-                <tr><td>Понедельник</td><td>09:00–10:20</td><td class="subject">Дискретные структуры (лекция)</td><td class="teacher">Кулдашева Н.К.</td><td></td></tr>
-                <tr><td>Понедельник</td><td>10:30–11:50</td><td class="subject">Дискретные структуры (лекция)</td><td class="teacher">Кулдашева Н.К.</td><td></td></tr>
-                <tr><td>Понедельник</td><td>12:00–13:20</td><td class="subject">Электроника и схемотехника (лекция)</td><td class="teacher">Акрамов Н.С.</td><td></td></tr>
-                <tr><td>Понедельник</td><td>14:40–15:50</td><td class="subject">Компьютерные сети (практика)</td><td class="teacher">Насриддинов Б.З.</td><td></td></tr>
-                <tr><td>Вторник</td><td>09:00–10:20</td><td class="subject">Компьютерные сети (практика)</td><td class="teacher">Насриддинов Б.З.</td><td></td></tr>
-                <tr><td>Вторник</td><td>10:30–11:50</td><td class="subject">Базы данных (лекция)</td><td class="teacher">Мусаджанова Д.А.</td><td></td></tr>
-                <tr><td>Вторник</td><td>12:00–13:20</td><td class="subject">Введение в алгебру</td><td class="teacher">Акрамов Н.С.</td><td>404</td></tr>
-                <tr><td>Вторник</td><td>14:00–15:20</td><td class="subject">Введение в алгебру (практика)</td><td class="teacher">Акрамов Н.С.</td><td>404</td></tr>
-                <tr><td>Среда</td><td>09:00–10:20</td><td class="subject">Электроника и схемотехника</td><td class="teacher">Насриддинов Б.З.</td><td></td></tr>
-                <tr><td>Среда</td><td>10:30–11:50</td><td class="subject">Базы данных (лекция)</td><td class="teacher">Мусаджанова Д.А.</td><td></td></tr>
-                <tr><td>Среда</td><td>12:00–13:20</td><td class="subject">Базы данных (практика)</td><td class="teacher">Мусаджанова Д.А.</td><td></td></tr>
-                <tr><td>Среда</td><td>14:00–15:20</td><td class="subject">Введение в алгебру (лекция)</td><td class="teacher">Акрамов Н.С.</td><td>307</td></tr>
-                <tr><td>Четверг</td><td>09:00–10:20</td><td class="subject">Базы данных (лекция)</td><td class="teacher">Мусаджанова Д.А.</td><td></td></tr>
-                <tr><td>Четверг</td><td>10:30–11:50</td><td class="subject">Электроника и схемотехника</td><td class="teacher">Насриддинов Б.З.</td><td></td></tr>
-                <tr><td>Четверг</td><td>12:00–13:20</td><td class="subject">Введение в алгебру (лекция)</td><td class="teacher">Акрамов Н.С.</td><td></td></tr>
-                <tr><td>Четверг</td><td>14:00–15:20</td><td class="subject">Введение в алгебру (практика)</td><td class="teacher">Акрамов Н.С.</td><td>404</td></tr>
-                <tr><td>Четверг</td><td>15:30–16:50</td><td class="subject">Дискретные структуры (практика)</td><td class="teacher">Кулдашева Н.К.</td><td></td></tr>
-            </table>
+
+    <section id="gallery" class="tab-panel container" hidden>
+      <div class="card">
+        <h2>Галерея группы</h2>
+        <div class="gallery-actions">
+          <input id="gallery-file" type="file" accept="image/*" multiple />
+          <button id="clear-gallery" class="btn">Очистить</button>
         </div>
+        <div id="gallery-grid" class="gallery-grid" aria-live="polite"></div>
+      </div>
+      <div id="viewer" class="viewer" hidden>
+        <button id="viewer-close" aria-label="Закрыть просмотр">×</button>
+        <img src="" alt="Просмотр фото" />
+      </div>
     </section>
-    <section id="news" class="tab-content">
-        <div class="block">
-            <h2 style="color:var(--accent);margin-top:0;">Новости и события</h2>
-            <ul class="news-list" id="news-list"></ul>
-            <button id="add-news-btn">Добавить новость</button>
-        </div>
+
+    <section id="contacts" class="tab-panel container" hidden>
+      <div class="card">
+        <h2>Контакты и обратная связь</h2>
+        <ul class="contacts-list">
+          <li><strong>Email:</strong> atc24-51@example.com</li>
+          <li><strong>Телефон:</strong> +7 (123) 456-78-90</li>
+          <li><strong>Telegram:</strong> <a href="https://t.me/iittlit" target="_blank" rel="noopener"> @iittlit</a></li>
+        </ul>
+        <form id="contact-form" class="contact-form" novalidate>
+          <label>Ваше имя <input id="cf-name" required /></label>
+          <label>Email <input id="cf-email" type="email" required /></label>
+          <label>Сообщение <textarea id="cf-message" rows="4" required></textarea></label>
+          <div><button type="submit" class="btn primary">Отправить</button></div>
+        </form>
+      </div>
     </section>
-    <section id="gallery" class="tab-content">
-        <div class="block">
-            <h2 style="color:var(--accent);margin-top:0;">Галерея группы</h2>
-            <div class="gallery-container" id="gallery-container"></div>
-            <button id="add-photo-btn">Добавить фото</button>
-            <div id="gallery-modal">
-                <span id="close-modal">&times;</span>
-                <img src="" alt="Фото группы">
-            </div>
-        </div>
-    </section>
-    <section id="contacts" class="tab-content">
-        <div class="block">
-            <h2 style="color:var(--accent);margin-top:0;">Контакты и обратная связь</h2>
-            <ul class="contacts-list">
-                <li><b>Email:</b> atc24-51@example.com</li>
-                <li><b>Телефон:</b> +7 (123) 456-78-90</li>
-                <li><b>Telegram:</b> <a href="https://t.me/iittlit" class="tg-link" target="_blank">@iittlit</a></li>
-            </ul>
-            <form class="contact-form" id="contact-form">
-                <input type="text" id="cf-name" placeholder="Ваше имя" required>
-                <input type="email" id="cf-email" placeholder="Ваш Email" required>
-                <textarea id="cf-message" rows="3" placeholder="Сообщение" required></textarea>
-                <button type="submit">Отправить сообщение</button>
-            </form>
-        </div>
-    </section>
-    <div id="notification"></div>
-    <footer>
-        &copy; 2025 АйТи-группа ATK 24-51. Все права защищены.
-    </footer>
-    <script>
-    // --- ДАННЫЕ ---
-    let newsData = [
-        {
-            date:"10 ноября",
-            text:"Участие в международной конференции IT и автоматизации!",
-            img:"https://images.unsplash.com/photo-1513258496099-48168024aec0"
-        },
-        {
-            date:"12 ноября",
-            text:"Наши студенты прошли практику на настоящем IT-предприятии.",
-            img:"https://images.unsplash.com/photo-1503676382389-4809596d5290"
-        }
-    ];
-    let galleryData = [
-        {src:"https://images.unsplash.com/photo-1513258496099-48168024aec0", alt:"Группа на практике"},
-        {src:"https://images.unsplash.com/photo-1503676382389-4809596d5290", alt:"Наши занятия"}
-    ];
+  </main>
 
-    // --- НАВИГАЦИЯ ВКЛАДКИ ---
-    document.querySelectorAll("#nav-tabs button").forEach(tab => {
-        tab.addEventListener("click", function() {
-            document.querySelectorAll("#nav-tabs button").forEach(btn => btn.classList.remove("active"));
-            this.classList.add("active");
-            document.querySelectorAll(".tab-content").forEach(sec => sec.classList.remove("active"));
-            document.getElementById(this.dataset.tab).classList.add("active");
-            window.scrollTo({top:0});
-        });
-    });
+  <div id="toasts" aria-live="polite" class="toasts" hidden></div>
 
-    // --- НОВОСТИ (добавление, удаление, c фото) ---
-    function renderNews() {
-        const list = document.getElementById("news-list");
-        list.innerHTML = "";
-        newsData.forEach((news, idx) => {
-            const li = document.createElement("li");
-            const imgEl = document.createElement("img");
-            imgEl.src = news.img;
-            imgEl.alt = "Фото новости";
-            const textDiv = document.createElement("div");
-            textDiv.className = "news-text";
-            textDiv.innerHTML = `<strong>${news.date}</strong>: ${news.text}`;
-            li.appendChild(imgEl);
-            li.appendChild(textDiv);
-            const delBtn = document.createElement("button");
-            delBtn.textContent = "Удалить";
-            delBtn.onclick = () => {
-                if (confirm("Удалить эту новость?")) {
-                    newsData.splice(idx, 1);
-                    renderNews();
-                    showNotify("Новость удалена");
-                }
-            };
-            li.appendChild(delBtn);
-            list.appendChild(li);
-        });
-    }
-    renderNews();
-    document.getElementById("add-news-btn").onclick = function() {
-        const text = prompt("Введите текст новости:");
-        if (text) {
-            let url = prompt("Вставьте ссылку на фото (URL):");
-            let now = new Date();
-            let date = now.toLocaleDateString('ru-RU', { day: '2-digit', month: 'long' });
-            newsData.unshift({date: date, text:text, img: url || "https://via.placeholder.com/70x70.png?text=Фото"});
-            renderNews();
-            showNotify("Новость добавлена!");
-        }
-    };
+  <footer class="site-footer">
+    <div class="container">
+      &copy; 2025 АйТи-группа ATK 24‑51. Все права защищены.
+    </div>
+  </footer>
 
-    // --- ГАЛЕРЕЯ (просмотр, добавление, удаление) ---
-    function renderGallery() {
-        const cont = document.getElementById("gallery-container");
-        cont.innerHTML = "";
-        galleryData.forEach((img, idx) => {
-            const imgEl = document.createElement("img");
-            imgEl.src = img.src;
-            imgEl.alt = img.alt;
-            imgEl.title = img.alt;
-            imgEl.onclick = () => showGalleryFull(img.src);
-            // Кнопка удаления
-            const wrap = document.createElement("div");
-            wrap.style.position = "relative";
-            wrap.appendChild(imgEl);
-            const delBtn = document.createElement("button");
-            delBtn.textContent = "×";
-            delBtn.style.position = "absolute";
-            delBtn.style.top = "2px";
-            delBtn.style.right = "8px";
-            delBtn.style.background = "#e74c3c";
-            delBtn.style.color = "#fff";
-            delBtn.style.border = "none";
-            delBtn.style.borderRadius = "50%";
-            delBtn.style.width = "24px";
-            delBtn.style.height = "24px";
-            delBtn.style.cursor = "pointer";
-            delBtn.onclick = (e) => {
-                e.stopPropagation();
-                if(confirm("Удалить фото?")){
-                    galleryData.splice(idx,1);
-                    renderGallery();
-                    showNotify("Фото удалено");
-                }
-            };
-            wrap.appendChild(delBtn);
-            cont.appendChild(wrap);
-        });
-    }
-    renderGallery();
-
-    document.getElementById("add-photo-btn").onclick = function() {
-        const url = prompt("Вставьте ссылку на фото (URL):");
-        if (url && url.startsWith("http")) {
-            const alt = prompt("Описание фото:");
-            galleryData.push({src:url,alt:alt||"Фото студенты"});
-            renderGallery();
-            showNotify("Фото добавлено!");
-        } else {
-            alert("Некорректный URL.");
-        }
-    };
-    // Fullscreen фото
-    function showGalleryFull(src) {
-        const modal = document.getElementById("gallery-modal");
-        modal.style.display = "flex";
-        modal.querySelector("img").src = src;
-    }
-    document.getElementById("close-modal").onclick = function() {
-        document.getElementById("gallery-modal").style.display = "none";
-    };
-    document.getElementById("gallery-modal").onclick = function(e){
-        if(e.target===this) this.style.display="none";
-    };
-
-    // --- Контактная форма (валидация, уведомление) ---
-    document.getElementById("contact-form").onsubmit = function(e){
-        e.preventDefault();
-        const name = document.getElementById("cf-name").value.trim();
-        const email = document.getElementById("cf-email").value.trim();
-        const msg = document.getElementById("cf-message").value.trim();
-        if (!name || !email || !msg) { alert("Заполните все поля!"); return; }
-        if (!email.match(/.+@.+\..+/)) { alert("Введите корректный email!"); return; }
-        showNotify("Спасибо "+name+"! Ваше сообщение отправлено.");
-        e.target.reset();
-    };
-
-    // --- Уведомления ---
-    function showNotify(msg){
-        const notif = document.getElementById("notification");
-        notif.textContent = msg;
-        notif.style.display = "block";
-        setTimeout(()=>notif.style.display="none",2500);
-    }
-    </script>
+  <script src="script.js" defer></script>
 </body>
 </html>
