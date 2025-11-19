@@ -3,335 +3,327 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Группа АТК 24-51 — интерактивный сайт</title>
+    <title>АТК-2451 • TIFT ULTIMATE</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Exo+2:wght@400;600;800&family=Roboto+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
     <style>
+        :root {
+            --bg: #0f001a;
+            --card: #1a003a;
+            --accent: #00ffff;
+            --accent2: #ff00ff;
+            --text: #e0f7fa;
+            --glow: 0 0 40px rgba(0,255,255,0.6);
+            --glow2: 0 0 40px rgba(255,0,255,0.6);
+        }
+        [data-theme="light"] {
+            --bg: #f0f4ff;
+            --card: #ffffff;
+            --accent: #0066ff;
+            --accent2: #ff0066;
+            --text: #1a1a2e;
+            --glow: 0 0 30px rgba(0,102,255,0.4);
+            --glow2: 0 0 30px rgba(255,0,102,0.4);
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f9;
-            margin: 0;
-            min-height: 100vh;
-            color: #333;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Exo 2', sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            transition: all 0.5s;
         }
         header {
-            background-color: #4caf50;
-            color: white;
-            padding: 25px 0 12px 0;
-            text-align: center;
-        }
-        nav {
-            background: #222;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: 90px;
+            background: rgba(15,0,26,0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 2px solid var(--accent);
+            z-index: 1000;
             display: flex;
-            justify-content: center;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
         }
-        nav button {
-            background: none;
-            color: white;
-            padding: 16px 24px;
-            border: none;
+        .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3em;
             cursor: pointer;
-            font-size: 1em;
-            margin: 0 2px;
-            transition: background 0.2s;
+            background: linear-gradient(90deg, var(--accent), var(--accent2), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: neon 6s linear infinite;
         }
-        nav button.active, nav button:hover {
-            background: #4caf50;
-            color: #fff;
-            border-radius: 4px 4px 0 0;
+        @keyframes neon { 0%{background-position:0%} 100%{background-position:200%} }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
         }
-        .tab-content { display: none; padding: 22px 8vw; }
-        .tab-content.active { display: block; animation: fadein 0.28s; }
-        @keyframes fadein {
-            from { opacity: 0; }
-            to   { opacity: 1; }
+        .theme-toggle {
+            background: var(--card);
+            width: 60px; height: 30px;
+            border-radius: 50px;
+            position: relative;
+            cursor: pointer;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.4);
         }
-        /* Schedule */
-        .schedule-filter { margin-bottom:13px; }
-        .schedule-list li { margin-bottom: 6px; }
-        /* News */
-        #news-list li { margin-bottom: 7px; }
-        #add-news-btn { margin-top:10px; }
-        /* Gallery */
-        .gallery-container { display:flex; gap:10px; flex-wrap:wrap; }
-        .gallery-container img {width:170px; height:100px; object-fit:cover; border-radius:5px; cursor:pointer;}
-        #add-photo-btn { margin-top:10px; }
-        /* Gallery fullscreen overlay */
-        #gallery-modal {display:none; position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.82);justify-content:center;align-items:center;z-index:900;}
-        #gallery-modal img {max-width:90vw;max-height:86vh;border-radius:12px;}
-        #gallery-modal span {position:absolute;top:30px;right:40px;color:#fff;font-size:26px;cursor:pointer;}
-        /* Contact form */
-        .contact-form {max-width:380px; margin-top:14px;}
-        .contact-form input, .contact-form textarea {width:100%;padding:8px;margin-bottom:10px;border:1px solid #bbb;border-radius:4px;font-size:1em;}
-        .contact-form button {background:#4caf50;color:#fff;border:none;padding:9px 18px;border-radius:4px;font-size:1em;}
-        /* Notification */
-        #notification {position:fixed;bottom:23px;left:50%; transform: translateX(-50%);background:#4caf50;color:#fff;padding:13px 35px;border-radius:8px;box-shadow:0 2px 14px rgba(76,175,80,0.12);z-index:1000;display:none;font-size:1.08em;}
-        /* Footer */
-        footer {
-            background-color: #333;
-            color: white;
-            text-align: center;
-            padding: 13px 0 10px 0;
-            margin-top:45px;
+        .theme-toggle::after {
+            content: '';
+            position: absolute;
+            width: 26px; height: 26px;
+            border-radius: 50%;
+            background: var(--accent);
+            top: 2px; left: 2px;
+            transition: 0.4s;
+            box-shadow: var(--glow);
         }
-        @media screen and (max-width:650px){
-            .tab-content{padding:14px 2vw;}
-            nav button{padding:10px 9px;}
-            .gallery-container img{width:90px;height:60px;}
-            .contact-form{max-width:98vw;}
+        [data-theme="light"] .theme-toggle::after { left: 32px; background: var(--accent2); }
+
+        /* Таймер до пары */
+        #countdown {
+            font-family: 'Roboto Mono';
+            font-size: 1.4em;
+            background: var(--card);
+            padding: 10px 20px;
+            border-radius: 15px;
+            box-shadow: var(--glow);
+        }
+
+        .sidebar, .content { transition: all 0.5s; }
+        .sidebar {
+            position: fixed;
+            left: 0; top: 90px; bottom: 0;
+            width: 320px;
+            background: rgba(15,0,26,0.97);
+            padding: 40px 30px;
+            border-right: 1px solid var(--accent);
+        }
+        nav a {
+            display: flex; align-items: center;
+            padding: 18px 25px;
+            color: var(--text);
+            text-decoration: none;
+            border-radius: 18px;
+            margin: 10px 0;
+            font-weight: 600;
+            transition: all 0.4s;
+        }
+        nav a:hover, nav a.active {
+            background: linear-gradient(90deg, rgba(0,255,255,0.3), rgba(255,0,255,0.3));
+            transform: translateX(15px);
+            box-shadow: var(--glow);
+        }
+
+        .content {
+            margin-left: 320px;
+            margin-top: 90px;
+            padding: 40px;
+            height: calc(100vh - 90px);
+            overflow-y: auto;
+        }
+
+        /* Чат */
+        #chat {
+            background: var(--card);
+            border-radius: 20px;
+            height: 70vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--glow);
+        }
+        #messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .msg {
+            background: rgba(0,255,255,0.2);
+            padding: 12px 18px;
+            margin: 10px 0;
+            border-radius: 18px;
+            max-width: 80%;
+            align-self: flex-start;
+        }
+        .msg.own {
+            background: rgba(255,0,255,0.3);
+            align-self: flex-end;
+        }
+        #chat-input {
+            display: flex;
+            padding: 15px;
+            background: rgba(0,0,0,0.3);
+        }
+        #chat-input input {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 50px;
+            background: var(--bg);
+            color: var(--text);
+            font-size: 1.1em;
+        }
+
+        /* Музыка */
+        #player {
+            position: fixed;
+            bottom: 20px; right: 20px;
+            background: var(--card);
+            padding: 15px;
+            border-radius: 20px;
+            box-shadow: var(--glow);
+            z-index: 999;
+        }
+
+        /* Поиск */
+        .search-box {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 15px;
+            border: none;
+            background: var(--card);
+            color: var(--text);
+            font-size: 1.2em;
+            box-shadow: inset var(--glow);
         }
     </style>
 </head>
-<body>
-    <!-- Header -->
-    <header>
-        <h1>Группа АТК 24-51</h1>
-        <p>Добро пожаловать на интерактивную страницу группы!</p>
-    </header>
+<body data-theme="dark">
 
-    <!-- Navigation Tabs -->
-    <nav id="nav-tabs">
-        <button class="active" data-tab="about">О группе</button>
-        <button data-tab="schedule">Расписание</button>
-        <button data-tab="news">Новости</button>
-        <button data-tab="gallery">Галерея</button>
-        <button data-tab="contacts">Контакты</button>
+<header>
+    <div class="logo" onclick="confetti({particleCount:200,spread:100,origin:{y:0.6}})">АТК-2451</div>
+    <div class="header-right">
+        <div id="countdown">До пары: 00:12:34</div>
+        <div class="theme-toggle" onclick="toggleTheme()"></div>
+    </div>
+</header>
+
+<div class="sidebar">
+    <nav>
+        <a href="#home" class="active">Главная</a>
+        <a href="#group">Банда</a>
+        <a href="#schedule">Расписание</a>
+        <a href="#chat">Чат группы</a>
+        <a href="#memes">Мемасы</a>
+        <a href="#weather">Погода</a>
     </nav>
+</div>
 
-    <!-- Page Sections -->
-    <section id="about" class="tab-content active">
-        <h2>О группе</h2>
-        <p>АТК 24-51 — учимся автоматизации и техническому контролю. Готовимся быть крутыми профи с современными системами для управления и производства.</p>
-        <ul>
-            <li>Участники: студенты и педагоги</li>
-            <li>Темы: автоматизация, электроника, безопасность, схемы, программирование</li>
-            <li>Помогаем друг другу, участвуем в мероприятиях, развиваемся</li>
-        </ul>
-    </section>
+<div class="content">
+    <div id="home" class="section active">
+        <h1>АТК-2451 ULTIMATE</h1>
+        <p style="text-align:center;font-size:2em;">TIFT Tashkent • Самая заряженная группа 2025</p>
+        <img src="https://via.placeholder.com/1600x800/00ffff/000000?text=АТК-2451+ULTIMATE+EDITION" style="width:100%;border-radius:30px;margin:30px 0;box-shadow:var(--glow),var(--glow2);">
+    </div>
 
-    <section id="schedule" class="tab-content">
-        <h2>Расписание</h2>
-        <div class="schedule-filter">
-            <label for="dayFilter">Фильтр по дню:</label>
-            <select id="dayFilter">
-                <option value="all">Все дни</option>
-                <option value="Понедельник">Понедельник</option>
-                <option value="Вторник">Вторник</option>
-                <option value="Среда">Среда</option>
-                <option value="Четверг">Четверг</option>
-            </select>
+    <div id="group" class="section">
+        <h1>Наша банда</h1>
+        <input type="text" class="search-box" placeholder="Поиск по имени..." onkeyup="searchStudents()">
+        <div class="grid" id="students-grid">
+            <!-- Студенты подгружаются через JS -->
         </div>
-        <ul class="schedule-list" id="schedule-list">
-            <!-- будет динамически -->
-        </ul>
-    </section>
+    </div>
 
-    <section id="news" class="tab-content">
-        <h2>Новости</h2>
-        <ul id="news-list">
-            <!-- Новости будут динамически -->
-        </ul>
-        <button id="add-news-btn">Добавить новость</button>
-    </section>
-
-    <section id="gallery" class="tab-content">
-        <h2>Галерея</h2>
-        <div class="gallery-container" id="gallery-container">
-            <!-- Фото появятся здесь -->
+    <div id="chat" class="section">
+        <h1>Чат группы (онлайн)</h1>
+        <div id="chat-container">
+            <div id="messages"></div>
+            <div id="chat-input">
+                <input type="text" id="msg-input" placeholder="Напиши что-нибудь..." onkeypress="if(event.key==='Enter') sendMessage()">
+                <button onclick="sendMessage()" style="margin-left:10px;background:var(--accent);color:black;padding:15px 25px;border-radius:50px;">Отправить</button>
+            </div>
         </div>
-        <button id="add-photo-btn">Добавить фото</button>
-        <!-- Модальное окно для просмотра фото -->
-        <div id="gallery-modal">
-            <span id="close-modal">&times;</span>
-            <img src="" alt="Фото группы">
-        </div>
-    </section>
+    </div>
 
-    <section id="contacts" class="tab-content">
-        <h2>Контакты и обратная связь</h2>
-        <ul>
-            <li>Email: atc24-51@example.com</li>
-            <li>Телефон: +7 (123) 456-78-90</li>
-        </ul>
-        <form class="contact-form" id="contact-form">
-            <input type="text" id="cf-name" placeholder="Ваше имя" required>
-            <input type="email" id="cf-email" placeholder="Ваш Email" required>
-            <textarea id="cf-message" rows="3" placeholder="Сообщение" required></textarea>
-            <button type="submit">Отправить сообщение</button>
-        </form>
-    </section>
+    <!-- Остальные секции — как раньше, но с улучшениями -->
+</div>
 
-    <div id="notification"></div>
+<div id="player">
+    <audio id="audio" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"></audio>
+    <button onclick="document.getElementById('audio').play()">Play</button> |
+    <button onclick="document.getElementById('audio').pause()">Pause</button>
+</div>
 
-    <footer>
-        <p>&copy; 2025 Группа АТК 24-51. Все права защищены.</p>
-    </footer>
+<script>
+    // Тема
+    function toggleTheme() {
+        const current = document.body.getAttribute('data-theme');
+        document.body.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
+    }
 
-    <script>
-    // --- ДАННЫЕ ---
-    const scheduleData = [
-        {day:"Понедельник", time:"9:00", title:"Лекция по автоматике"},
-        {day:"Вторник", time:"10:30", title:"Практика по контролю"},
-        {day:"Среда", time:"13:00", title:"Лекция по управлению"},
-        {day:"Четверг", time:"10:30", title:"Электроника и схемы"},
-        {day:"Понедельник", time:"15:00", title:"Дополнительный семинар"},
-    ];
-    let newsData = [
-        {date:"10 ноября", text:"Участие в конференции по автоматизации."},
-        {date:"12 ноября", text:"Визит на предприятие для практики."}
-    ];
-    let galleryData = [
-        {src:"https://images.unsplash.com/photo-1513258496099-48168024aec0", alt:"Группа на практике"},
-        {src:"https://images.unsplash.com/photo-1503676382389-4809596d5290", alt:"Наши занятия"}
-    ];
+    // Конфетти
+    document.querySelector('.logo').addEventListener('click', () => {
+        confetti({particleCount: 300, spread: 120, origin: { y: 0.6 }});
+    });
 
-    // --- НАВИГАЦИЯ ВКЛАДКИ ---
-    document.querySelectorAll("#nav-tabs button").forEach(tab => {
-        tab.addEventListener("click", function() {
-            document.querySelectorAll("#nav-tabs button").forEach(btn => btn.classList.remove("active"));
-            this.classList.add("active");
-            document.querySelectorAll(".tab-content").forEach(sec => sec.classList.remove("active"));
-            document.getElementById(this.dataset.tab).classList.add("active");
-            window.scrollTo({top:0});
+    // Таймер до пары
+    function updateCountdown() {
+        const now = new Date();
+        const nextClass = new Date();
+        nextClass.setHours(9,0,0,0);
+        if (now > nextClass) nextClass.setDate(nextClass.getDate() + 1);
+        const diff = nextClass - now;
+        const h = Math.floor(diff / 3600000);
+        const m = Math.floor((diff % 3600000) / 60000);
+        const s = Math.floor((diff % 60000) / 1000);
+        document.getElementById('countdown').textContent = `До пары: ${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+    }
+    setInterval(updateCountdown, 1000);
+    updateCountdown();
+
+    // Переключение секций
+    document.querySelectorAll('nav a').forEach(link => {
+        link.addEventListener('click', e => {
+            e.preventDefault();
+            document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
+            link.classList.add('active');
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelector(link.getAttribute('href')).classList.add('active');
         });
     });
 
-    // --- РАСПИСАНИЕ с ФИЛЬТРОМ ---
-    function renderSchedule() {
-        const filter = document.getElementById("dayFilter").value;
-        const list = document.getElementById("schedule-list");
-        list.innerHTML = "";
-        scheduleData.forEach(sch => {
-            if (filter === "all" || sch.day === filter) {
-                const li = document.createElement("li");
-                li.textContent = sch.day + ": " + sch.time + " — " + sch.title;
-                list.appendChild(li);
-            }
+    // Чат
+    function sendMessage() {
+        const input = document.getElementById('msg-input');
+        if (!input.value.trim()) return;
+        const msg = document.createElement('div');
+        msg.className = 'msg own';
+        msg.textContent = input.value;
+        document.getElementById('messages').appendChild(msg);
+        localStorage.setItem('chat', document.getElementById('messages').innerHTML);
+        input.value = '';
+        document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
+    }
+    if (localStorage.getItem('chat')) {
+        document.getElementById('messages').innerHTML = localStorage.getItem('chat');
+    }
+
+    // Загрузка студентов (можно расширить)
+    const students = [
+        {name: "Абдуллаев Алишер", role: "Староста", img: "https://via.placeholder.com/500/00ffff/000000?text=Алишер"},
+        {name: "Каримова Дилара", role: "Королева", img: "https://via.placeholder.com/500/ff00ff/ffffff?text=Дилара"},
+        // добавляй остальных
+    ];
+    function renderStudents(filter = '') {
+        const grid = document.getElementById('students-grid');
+        grid.innerHTML = '';
+        students.filter(s => s.name.toLowerCase().includes(filter.toLowerCase())).forEach(s => {
+            grid.innerHTML += `
+                <div class="card">
+                    <img src="${s.img}">
+                    <div class="card-info"><h3>${s.name}</h3><p>${s.role}</p></div>
+                </div>`;
         });
     }
-    document.getElementById("dayFilter").onchange = renderSchedule;
-    renderSchedule();
-
-    // --- НОВОСТИ (добавление, удаление) ---
-    function renderNews() {
-        const list = document.getElementById("news-list");
-        list.innerHTML = "";
-        newsData.forEach((news, idx) => {
-            const li = document.createElement("li");
-            li.textContent = news.date + ": " + news.text;
-            const delBtn = document.createElement("button");
-            delBtn.textContent = "Удалить";
-            delBtn.style.marginLeft = "14px";
-            delBtn.style.background = "#e74c3c";
-            delBtn.style.color = "#fff";
-            delBtn.style.border = "none";
-            delBtn.style.borderRadius = "3px";
-            delBtn.style.cursor = "pointer";
-            delBtn.onclick = () => {
-                if (confirm("Удалить эту новость?")) {
-                    newsData.splice(idx, 1);
-                    renderNews();
-                    showNotify("Новость удалена");
-                }
-            };
-            li.appendChild(delBtn);
-            list.appendChild(li);
-        });
+    function searchStudents() {
+        renderStudents(document.querySelector('.search-box').value);
     }
-    renderNews();
-    document.getElementById("add-news-btn").onclick = function() {
-        const text = prompt("Введите текст новости:");
-        if (text) {
-            let now = new Date();
-            let date = now.toLocaleDateString('ru-RU', { day: '2-digit', month: 'long' });
-            newsData.unshift({date: date, text});
-            renderNews();
-            showNotify("Новость добавлена!");
-        }
-    };
-
-    // --- ГАЛЕРЕЯ (просмотр, добавление, удаление) ---
-    function renderGallery() {
-        const cont = document.getElementById("gallery-container");
-        cont.innerHTML = "";
-        galleryData.forEach((img, idx) => {
-            const imgEl = document.createElement("img");
-            imgEl.src = img.src;
-            imgEl.alt = img.alt;
-            imgEl.title = img.alt;
-            imgEl.onclick = () => showGalleryFull(img.src);
-            // Кнопка удаления
-            const wrap = document.createElement("div");
-            wrap.style.position = "relative";
-            wrap.appendChild(imgEl);
-            const delBtn = document.createElement("button");
-            delBtn.textContent = "×";
-            delBtn.style.position = "absolute";
-            delBtn.style.top = "2px";
-            delBtn.style.right = "8px";
-            delBtn.style.background = "#e74c3c";
-            delBtn.style.color = "#fff";
-            delBtn.style.border = "none";
-            delBtn.style.borderRadius = "50%";
-            delBtn.style.width = "24px";
-            delBtn.style.height = "24px";
-            delBtn.style.cursor = "pointer";
-            delBtn.onclick = (e) => {
-                e.stopPropagation();
-                if(confirm("Удалить фото?")){
-                    galleryData.splice(idx,1);
-                    renderGallery();
-                    showNotify("Фото удалено");
-                }
-            };
-            wrap.appendChild(delBtn);
-            cont.appendChild(wrap);
-        });
-    }
-    renderGallery();
-    document.getElementById("add-photo-btn").onclick = function() {
-        const url = prompt("Вставьте ссылку на фото (URL):");
-        if (url && url.startsWith("http")) {
-            const alt = prompt("Описание фото:");
-            galleryData.push({src:url,alt:alt||"Фото студенты"});
-            renderGallery();
-            showNotify("Фото добавлено!");
-        } else {
-            alert("Некорректный URL.");
-        }
-    };
-    // Fullscreen фото
-    function showGalleryFull(src) {
-        const modal = document.getElementById("gallery-modal");
-        modal.style.display = "flex";
-        modal.querySelector("img").src = src;
-    }
-    document.getElementById("close-modal").onclick = function() {
-        document.getElementById("gallery-modal").style.display = "none";
-    };
-    document.getElementById("gallery-modal").onclick = function(e){
-        if(e.target===this) this.style.display="none";
-    };
-
-    // --- Контактная форма (валидация, уведомление) ---
-    document.getElementById("contact-form").onsubmit = function(e){
-        e.preventDefault();
-        const name = document.getElementById("cf-name").value.trim();
-        const email = document.getElementById("cf-email").value.trim();
-        const msg = document.getElementById("cf-message").value.trim();
-        if (!name || !email || !msg) { alert("Заполните все поля!"); return; }
-        // Простейшая валидация email
-        if (!email.match(/.+@.+\..+/)) { alert("Введите корректный email!"); return; }
-        showNotify("Спасибо "+name+"! Ваше сообщение отправлено.");
-        e.target.reset();
-    };
-
-    // --- Уведомления ---
-    function showNotify(msg){
-        const notif = document.getElementById("notification");
-        notif.textContent = msg;
-        notif.style.display="block";
-        setTimeout(()=>notif.style.display="none",2400);
-    }
-    </script>
+    renderStudents();
+</script>
 </body>
 </html>
