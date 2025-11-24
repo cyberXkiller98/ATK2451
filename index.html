@@ -1,329 +1,364 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>АТК-2451 • TIFT ULTIMATE</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Exo+2:wght@400;600;800&family=Roboto+Mono&display=swap" rel="stylesheet">
+    <title>АТК-2451 | ЛЕГЕНДЫ TIFT</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@800;900&family=Exo+2:wght@600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    
     <style>
         :root {
-            --bg: #0f001a;
-            --card: #1a003a;
-            --accent: #00ffff;
-            --accent2: #ff00ff;
-            --text: #e0f7fa;
-            --glow: 0 0 40px rgba(0,255,255,0.6);
-            --glow2: 0 0 40px rgba(255,0,255,0.6);
+            --bg: #0a001a;
+            --text: #e0f8ff;
+            --primary: #00eeff;
+            --secondary: #ff0088;
+            --accent: #ff00ff;
+            --nav-bg: rgba(10,14,23,0.96);
+            --card: rgba(20,20,80,0.5);
+            --border: rgba(0,238,255,0.5);
+            --glow: 0 0 80px rgba(0,238,255,0.7);
         }
         [data-theme="light"] {
-            --bg: #f0f4ff;
-            --card: #ffffff;
-            --accent: #0066ff;
-            --accent2: #ff0066;
-            --text: #1a1a2e;
-            --glow: 0 0 30px rgba(0,102,255,0.4);
-            --glow2: 0 0 30px rgba(255,0,102,0.4);
+            --bg: #f0f8ff;
+            --text: #0f172a;
+            --primary: #0066ff;
+            --secondary: #e91e63;
+            --nav-bg: rgba(255,255,255,0.95);
+            --card: rgba(255,255,255,0.92);
         }
+
         * { margin:0; padding:0; box-sizing:border-box; }
-        body {
-            background: var(--bg);
-            color: var(--text);
-            font-family: 'Exo 2', sans-serif;
-            height: 100vh;
-            overflow: hidden;
-            transition: all 0.5s;
-        }
+        body { background:var(--bg); color:var(--text); font-family:'Exo 2',sans-serif; overflow-x:hidden; }
+
         header {
-            position: fixed;
-            top: 0; left: 0; right: 0;
-            height: 90px;
-            background: rgba(15,0,26,0.95);
-            backdrop-filter: blur(20px);
-            border-bottom: 2px solid var(--accent);
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 40px;
+            position:fixed; top:0; left:0; right:0; z-index:9999;
+            background:var(--nav-bg); backdrop-filter:blur(25px);
+            border-bottom:2px solid var(--border); padding:20px 0;
         }
-        .logo {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 3em;
-            cursor: pointer;
-            background: linear-gradient(90deg, var(--accent), var(--accent2), var(--accent));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: neon 6s linear infinite;
-        }
-        @keyframes neon { 0%{background-position:0%} 100%{background-position:200%} }
-
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-        .theme-toggle {
-            background: var(--card);
-            width: 60px; height: 30px;
-            border-radius: 50px;
-            position: relative;
-            cursor: pointer;
-            box-shadow: inset 0 0 15px rgba(0,0,0,0.4);
-        }
-        .theme-toggle::after {
-            content: '';
-            position: absolute;
-            width: 26px; height: 26px;
-            border-radius: 50%;
-            background: var(--accent);
-            top: 2px; left: 2px;
-            transition: 0.4s;
-            box-shadow: var(--glow);
-        }
-        [data-theme="light"] .theme-toggle::after { left: 32px; background: var(--accent2); }
-
-        /* Таймер до пары */
-        #countdown {
-            font-family: 'Roboto Mono';
-            font-size: 1.4em;
-            background: var(--card);
-            padding: 10px 20px;
-            border-radius: 15px;
-            box-shadow: var(--glow);
-        }
-
-        .sidebar, .content { transition: all 0.5s; }
-        .sidebar {
-            position: fixed;
-            left: 0; top: 90px; bottom: 0;
-            width: 320px;
-            background: rgba(15,0,26,0.97);
-            padding: 40px 30px;
-            border-right: 1px solid var(--accent);
-        }
+        .nav-container { max-width:1500px; margin:0 auto; padding:0 40px; text-align:center; }
+        nav ul { display:flex; gap:50px; justify-content:center; flex-wrap:wrap; list-style:none; }
         nav a {
-            display: flex; align-items: center;
-            padding: 18px 25px;
-            color: var(--text);
-            text-decoration: none;
-            border-radius: 18px;
-            margin: 10px 0;
-            font-weight: 600;
-            transition: all 0.4s;
+            color:var(--text); text-decoration:none; font-weight:800; font-size:1.2rem;
+            padding:14px 34px; border-radius:60px; transition:all 0.4s;
         }
-        nav a:hover, nav a.active {
-            background: linear-gradient(90deg, rgba(0,255,255,0.3), rgba(255,0,255,0.3));
-            transform: translateX(15px);
-            box-shadow: var(--glow);
-        }
+        nav a.active { background:var(--primary); color:#000; box-shadow:var(--glow); transform:scale(1.1); }
+        nav a:hover:not(.active) { background:rgba(0,238,255,0.25); transform:translateY(-4px); }
 
-        .content {
-            margin-left: 320px;
-            margin-top: 90px;
-            padding: 40px;
-            height: calc(100vh - 90px);
-            overflow-y: auto;
+        .theme-toggle {
+            position:fixed; top:20px; right:30px; z-index:9999;
+            width:80px; height:80px; border-radius:50%; background:linear-gradient(135deg,var(--primary),var(--secondary));
+            border:none; cursor:pointer; box-shadow:var(--glow); display:flex; align-items:center; justify-content:center;
+            transition:all 0.7s cubic-bezier(0.68,-0.55,0.265,1.55);
         }
+        .theme-toggle i { font-size:2.4rem; color:#000; }
+        .theme-toggle:hover { transform:scale(1.3) rotate(360deg); box-shadow:0 0 120px var(--secondary); }
 
-        /* Чат */
-        #chat {
+        /* ГЛАВНАЯ — НОРМАЛЬНЫЙ РАЗМЕР, НО КРАСИВО */
+        .hero {
+            height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;
+            background:linear-gradient(135deg,#0f0022,#1a0033,#000);
+        }
+        .hero h1 {
+            font-family:'Orbitron',sans-serif; font-size:12rem; font-weight:900;
+            background:linear-gradient(90deg,var(--primary),var(--secondary),#ff00ff,var(--primary));
+            -webkit-background-clip:text; background-clip:text; color:transparent;
+            text-shadow:var(--glow); animation:neonPulse 3s infinite alternate;
+        }
+        .hero h2 {
+            font-size:6rem; color:var(--secondary); text-shadow:0 0 80px var(--secondary);
+            margin:20px 0; letter-spacing:12px;
+        }
+        .hero p {
+            font-size:2.8rem; font-weight:800; margin-top:40px;
+            background:linear-gradient(90deg,#00ffff,#ff00ff); -webkit-background-clip:text; color:transparent;
+        }
+        @keyframes neonPulse { from{filter:drop-shadow(0 0 40px var(--primary));} to{filter:drop-shadow(0 0 120px var(--secondary));} }
+
+        /* НОВОСТИ ВНИЗУ ГЛАВНОЙ */
+        .news-block {
+            padding: 100px 40px 140px;
+            text-align: center;
             background: var(--card);
-            border-radius: 20px;
-            height: 70vh;
-            display: flex;
-            flex-direction: column;
-            box-shadow: var(--glow);
+            border-top: 4px solid var(--primary);
+            margin-top: -100px;
         }
-        #messages {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
+        .news-block h2 {
+            font-family:'Orbitron',sans-serif;
+            font-size: 6rem;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            color: transparent;
+            text-shadow: var(--glow);
+            margin-bottom: 50px;
         }
-        .msg {
-            background: rgba(0,255,255,0.2);
-            padding: 12px 18px;
-            margin: 10px 0;
-            border-radius: 18px;
-            max-width: 80%;
-            align-self: flex-start;
-        }
-        .msg.own {
-            background: rgba(255,0,255,0.3);
-            align-self: flex-end;
-        }
-        #chat-input {
-            display: flex;
-            padding: 15px;
-            background: rgba(0,0,0,0.3);
-        }
-        #chat-input input {
-            flex: 1;
-            padding: 15px;
-            border: none;
-            border-radius: 50px;
-            background: var(--bg);
-            color: var(--text);
-            font-size: 1.1em;
+        .news-placeholder {
+            font-size: 3rem;
+            font-weight: 800;
+            opacity: 0.9;
+            line-height: 1.4;
         }
 
-        /* Музыка */
-        #player {
-            position: fixed;
-            bottom: 20px; right: 20px;
-            background: var(--card);
-            padding: 15px;
-            border-radius: 20px;
-            box-shadow: var(--glow);
-            z-index: 999;
+        .page { display:none; opacity:0; transform:translateY(50px); transition:all 0.9s ease; min-height:100vh; padding-top:140px; }
+        .page.active { display:block; opacity:1; transform:translateY(0); }
+
+        .container { max-width:1500px; margin:0 auto; padding:40px; }
+
+        h2.title {
+            font-family:'Orbitron',sans-serif; font-size:6rem; text-align:center; color:var(--primary);
+            margin:80px 0 60px; text-shadow:var(--glow);
+            background:linear-gradient(90deg,var(--primary),var(--secondary));
+            -webkit-background-clip:text; color:transparent;
         }
 
-        /* Поиск */
-        .search-box {
-            width: 100%;
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 15px;
-            border: none;
-            background: var(--card);
-            color: var(--text);
-            font-size: 1.2em;
-            box-shadow: inset var(--glow);
+        /* УМНОЕ РАСПИСАНИЕ */
+        .week-info {
+            text-align:center; margin-bottom:30px; font-size:1.4rem; opacity:0.9;
+            background:linear-gradient(90deg,var(--primary),var(--secondary)); -webkit-background-clip:text; color:transparent;
+        }
+        .days-tabs { display:flex; justify-content:center; gap:25px; flex-wrap:wrap; margin:60px 0; }
+        .day-btn { padding:18px 40px; background:var(--card); border:3px solid var(--border); border-radius:60px;
+            color:var(--text); font-weight:800; font-size:1.3rem; cursor:pointer; transition:all 0.5s; }
+        .day-btn.active, .day-btn:hover { background:var(--primary); color:#000; box-shadow:var(--glow); transform:scale(1.1); }
+
+        .schedule-table {
+            width:100%; border-collapse:collapse; background:var(--card); border-radius:25px;
+            overflow:hidden; box-shadow:var(--glow); margin:40px 0; display:none;
+        }
+        .schedule-table.active { display:table; animation:fadeIn 0.8s; }
+        @keyframes fadeIn { from{opacity:0; transform:scale(0.95);} to{opacity:1; transform:scale(1);} }
+
+        .schedule-table th {
+            background:linear-gradient(90deg,var(--primary),var(--secondary)); color:#000;
+            padding:22px; font-size:1.5rem; font-weight:900;
+        }
+        .schedule-table td {
+            padding:20px; text-align:center; border-bottom:1px solid var(--border);
+            font-size:1.2rem; transition:all 0.3s;
+        }
+        .schedule-table tr:hover td { background:rgba(0,238,255,0.15); transform:scale(1.02); }
+
+        .type { font-size:0.9rem; opacity:0.8; font-style:italic; }
+
+        /* ЛЕГЕНДЫ */
+        .legends-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:40px; }
+        .legend-card {
+            background:var(--card); border:3px solid var(--border); border-radius:30px;
+            padding:50px 30px; text-align:center; transition:all 0.6s cubic-bezier(0.175,0.885,0.32,1.275);
+            backdrop-filter:blur(15px);
+        }
+        .legend-card:hover {
+            transform:translateY(-40px) scale(1.12); border-color:var(--secondary);
+            box-shadow:0 40px 100px rgba(255,0,136,0.5);
+        }
+        .legend-card h3 { font-size:2.8rem; color:var(--primary); margin-bottom:15px; text-shadow:0 0 30px var(--primary); }
+        .legend-card a { color:var(--secondary); font-size:2.2rem; font-weight:900; text-decoration:none; }
+
+        .contact-card { max-width:1000px; margin:80px auto; padding:80px; background:var(--card); border:4px solid var(--primary); border-radius:40px; text-align:center; box-shadow:var(--glow); }
+
+        footer { text-align:center; padding:120px 20px 80px; background:var(--nav-bg); border-top:2px solid var(--border); }
+
+        @media (max-width:768px) {
+            .hero h1{font-size:7.5rem;} .hero h2{font-size:4rem;} .hero p{font-size:2rem;}
+            .news-block h2 {font-size:4rem;}
+            .news-placeholder {font-size:2rem;}
+            h2.title{font-size:4rem;} .day-btn{font-size:1.1rem; padding:14px 25px;}
         }
     </style>
 </head>
-<body data-theme="dark">
+<body style="scroll-behavior:smooth;">
 
-<header>
-    <div class="logo" onclick="confetti({particleCount:200,spread:100,origin:{y:0.6}})">АТК-2451</div>
-    <div class="header-right">
-        <div id="countdown">До пары: 00:12:34</div>
-        <div class="theme-toggle" onclick="toggleTheme()"></div>
-    </div>
-</header>
+    <header>
+        <div class="nav-container">
+            <nav>
+                <ul>
+                    <li><a href="#" class="active" data-page="home">ГЛАВНАЯ</a></li>
+                    <li><a href="#" data-page="schedule">РАСПИСАНИЕ</a></li>
+                    <li><a href="#" data-page="legends">ЛЕГЕНДЫ</a></li>
+                    <li><a href="#" data-page="contact">СВЯЗЬ</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
 
-<div class="sidebar">
-    <nav>
-        <a href="#home" class="active">Главная</a>
-        <a href="#group">Банда</a>
-        <a href="#schedule">Расписание</a>
-        <a href="#chat">Чат группы</a>
-        <a href="#memes">Мемасы</a>
-        <a href="#weather">Погода</a>
-    </nav>
-</div>
+    <button class="theme-toggle" id="themeToggle"><i class="fas fa-moon"></i></button>
 
-<div class="content">
-    <div id="home" class="section active">
-        <h1>АТК-2451 ULTIMATE</h1>
-        <p style="text-align:center;font-size:2em;">TIFT Tashkent • Самая заряженная группа 2025</p>
-        <img src="https://via.placeholder.com/1600x800/00ffff/000000?text=АТК-2451+ULTIMATE+EDITION" style="width:100%;border-radius:30px;margin:30px 0;box-shadow:var(--glow),var(--glow2);">
-    </div>
+    <!-- ГЛАВНАЯ + НОВОСТИ ВНИЗУ -->
+    <div id="home" class="page active">
+        <div class="hero">
+            <h1>АТК-2451</h1>
+            <h2>T I F T</h2>
+            <p>МЫ НЕ ПРОСТО ГРУППА</p> 
+        </div>
 
-    <div id="group" class="section">
-        <h1>Наша банда</h1>
-        <input type="text" class="search-box" placeholder="Поиск по имени..." onkeyup="searchStudents()">
-        <div class="grid" id="students-grid">
-            <!-- Студенты подгружаются через JS -->
+        <!-- НОВОСТИ ПРЯМО ЗДЕСЬ -->
+        <div class="news-block">
+            <h2>НОВОСТИ</h2>
+            <p class="news-placeholder">
+                Это не анонс  
+                <br>
+                Это предупреждение
+                <br>
+                Скоро здесь будет либо легендарно
+                <br>
+                либо полный трындец
+                <br>
+                Третьего не дано
+                <br>
+            </p>
         </div>
     </div>
 
-    <div id="chat" class="section">
-        <h1>Чат группы (онлайн)</h1>
-        <div id="chat-container">
-            <div id="messages"></div>
-            <div id="chat-input">
-                <input type="text" id="msg-input" placeholder="Напиши что-нибудь..." onkeypress="if(event.key==='Enter') sendMessage()">
-                <button onclick="sendMessage()" style="margin-left:10px;background:var(--accent);color:black;padding:15px 25px;border-radius:50px;">Отправить</button>
+    <!-- РАСПИСАНИЕ -->
+    <div id="schedule" class="page">
+        <div class="container">
+            <h2 class="title">РАСПИСАНИЕ</h2>
+            <div class="week-info">Неделя: 24 — 28 ноября 2025</div>
+    
+
+
+            <div class="days-tabs">
+                <button class="day-btn active" data-day="monday">ПН</button>
+                <button class="day-btn" data-day="tuesday">ВТ</button>
+                <button class="day-btn" data-day="wednesday">СР</button>
+                <button class="day-btn" data-day="thursday">ЧТ</button>
+                <button class="day-btn" data-day="friday">ПТ</button>
+            </div>
+
+            <!-- ПОНЕДЕЛЬНИК -->
+            <table class="schedule-table active" id="monday">
+                <tr><th>№</th><th>Время</th><th>Предмет</th><th>Тип</th><th>Преподаватель</th><th>Аудитория</th></tr>
+                <tr><td>1</td><td>09:00</td><td>Diskret tuzulmalari</td><td class="type">Лекция</td><td>QULDASHEVA N. K.</td><td>301 (II-bino)</td></tr>
+                <tr><td>2</td><td>10:30</td><td>Diskret tuzulmalari</td><td class="type">Лекция</td><td>QULDASHEVA N. K.</td><td>Lab 09 (II-bino)</td></tr>
+                <tr><td>3</td><td>12:00</td><td>Elektonika va sxemalar 1</td><td class="type">Лекция</td><td>NASRIDDINOV B. Z.</td><td>301 (II-bino)</td></tr>
+                <tr><td>4</td><td>14:00</td><td>Kompyuter tarmoqlari</td><td class="type">Практика</td><td>NASRIDDINOV B. Z.</td><td>Lab 05 (II-bino)</td></tr>
+            </table>
+
+            <!-- ВТОРНИК -->
+            <table class="schedule-table" id="tuesday">
+                <tr><th>№</th><th>Время</th><th>Предмет</th><th>Тип</th><th>Преподаватель</th><th>Аудитория</th></tr>
+                <tr><td>1</td><td>09:00</td><td>Kompyuter tarmoqlari</td><td class="type">Лекция</td><td>NASRIDDINOV B. Z.</td><td>Lab 03 (II-bino)</td></tr>
+                <tr><td>2</td><td>10:30</td><td>Ma'lumotlar bazasi</td><td class="type">Лекция</td><td>MUSADJANOVA D. A.</td><td>Lab 03 (II-bino)</td></tr>
+            </table>
+
+            <!-- СРЕДА -->
+            <table class="schedule-table" id="wednesday">
+                <tr><th>№</th><th>Время</th><th>Предмет</th><th>Тип</th><th>Преподаватель</th><th>Аудитория</th></tr>
+                <tr><td>1</td><td>09:00</td><td>Elektonika va sxemalar 1</td><td class="type">Практика</td><td>NASRIDDINOV B. Z.</td><td>Lab 07 (II-bino)</td></tr>
+                <tr><td>2</td><td>10:30</td><td>Kompyuter tarmoqlari</td><td class="type">Практика</td><td>NASRIDDINOV B. Z.</td><td>Lab 03 (II-bino)</td></tr>
+                <tr><td>3</td><td>12:00</td><td>Ma'lumotlar bazasi</td><td class="type">Практика</td><td>MUSADJANOVA D. A.</td><td>Lab 03 (II-bino)</td></tr>
+            </table>
+
+            <!-- ЧЕТВЕРГ -->
+            <table class="schedule-table" id="thursday">
+                <tr><th>№</th><th>Время</th><th>Предмет</th><th>Тип</th><th>Преподаватель</th><th>Аудитория</th></tr>
+                <tr><td>1</td><td>09:00</td><td>Ma'lumotlar bazasi</td><td class="type">Практика</td><td>MUSADJANOVA D. A.</td><td>Lab 05 (II-bino)</td></tr>
+                <tr><td>2</td><td>10:30</td><td>Elektonika va sxemalar 1</td><td class="type">Практика</td><td>NASRIDDINOV B. Z.</td><td>Lab 03 (II-bino)</td></tr>
+            </table>
+
+            <!-- ПЯТНИЦА -->
+            <table class="schedule-table" id="friday">
+                <tr><th>№</th><th>Время</th><th>Предмет</th><th>Тип</th><th>Преподаватель</th><th>Аудитория</th></tr>
+                <tr><td>3</td><td>12:00</td><td>Chiziqli algebra</td><td class="type">Лекция</td><td>AKRAMOV N. S.</td><td>307 (II-bino)</td></tr>
+                <tr><td>4</td><td>14:00</td><td>Chiziqli algebra</td><td class="type">Практика</td><td>AKRAMOV N. S.</td><td>404 (II-bino)</td></tr>
+                <tr><td>5</td><td>15:30</td><td>Diskret tuzulmalari</td><td class="type">Практика</td><td>QULDASHEVA N. K.</td><td>Lab 09 (II-bino)</td></tr>
+            </table>
+        </div>
+    </div>
+
+   <!-- ЛЕГЕНДЫ АТК-2451 -->
+    <div id="legends" class="page">
+        <div class="container">
+            <h2 class="title">ЛЕГЕНДЫ АТК-2451</h2>
+            <div class="legends-grid">
+                <div class="legend-card"><h3>Бурхон легенда учитель</h3><a href="https://t.me/nsrnvbz" target="_blank">@nsrnvbz</a></div>
+                <div class="legend-card"><h3>Усмонбек
+
+                    Староста
+                </h3><a href="https://t.me/aqua2508" target="_blank">@aqua2508</a></div>
+                <div class="legend-card"><h3>Тимур</h3><a href="https://t.me/iittlit" target="_blank">@iittlit</a></div><div class="legend-card"><h3>Сардорбек</h3><a href="https://t.me/RS_Pov" target="_blank">@RS_Pov</a></div>
+                <div class="legend-card"><h3>Умиджон</h3><a href="https://t.me/umid70_03" target="_blank">@umid70_03</a></div>
+                <div class="legend-card"><h3>Асаль</h3><a href="" target="_blank"> no name</a></div>
+                <div class="legend-card"><h3>Алиакбар</h3><a href="https://t.me/I1alia" target="_blank">@I1alia</a></div>
+                <div class="legend-card"><h3>Шахзод</h3><a href="https://t.me/Lszkan" target="_blank">@Lszkan</a></div>
+                <div class="legend-card"><h3>Достонбек</h3><a href="" target="_blank"> no name</a></div>
+                <div class="legend-card"><h3>Дарья</h3><a href="https://t.me/crazieso" target="_blank">@crazieso</a></div>
+                <div class="legend-card"><h3>Дониёр</h3><a href="https://t.me/doni_7466" target="_blank">@doni_7466</a></div>
+                <div class="legend-card"><h3>Марат</h3><a href="https://t.me/mara_festival" target="_blank">@mara_festival</a></div>
             </div>
         </div>
     </div>
 
-    <!-- Остальные секции — как раньше, но с улучшениями -->
-</div>
 
-<div id="player">
-    <audio id="audio" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"></audio>
-    <button onclick="document.getElementById('audio').play()">Play</button> |
-    <button onclick="document.getElementById('audio').pause()">Pause</button>
-</div>
+    <!-- СВЯЗЬ -->
+    <div id="contact" class="page">
+        <div class="container">
+            <h2 class="title">СВЯЗЬ</h2>
+            <div class="contact-card">
+                <h3 style="font-size:3rem; color:var(--primary);">ГОСПОДИН КОД — ЗДЕСЬ</h3>
+                <p style="font-size:2rem; margin:40px 0;">Баги, идеи, мемы, фотки — всё кидай ему</p>
+                <div style="margin-top:50px;">
+                    <p style="font-size:2.5rem; margin-bottom:20px;"><strong>Сайт создал: Тимур</strong></p>
+                    <a href="https://t.me/iittlit" target="_blank" style="color:var(--secondary); font-size:4rem; font-weight:900;">Tima</a>
+                    <p style="margin-top:20px; font-size:2rem;">Староста Усмонбек</p>
+                    <a href="https://t.me/aqua2508" target="_blank" style="color:var(--secondary); font-size:4rem; font-weight:900;">Усмон</a>
+                </div>
+            </div>
+        </div>
+    </div>
 
-<script>
-    // Тема
-    function toggleTheme() {
-        const current = document.body.getAttribute('data-theme');
-        document.body.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
-    }
+    <footer>
+        <p style="font-size:2rem;"><strong>АТК-2451 — ЛУЧШАЯ ГРУППА ВО ВСЕЛЕННОЙ</strong></p>
+        <p style="margin-top:20px; font-size:1.6rem;">
+            Сайт сделал — <a href="https://t.me/iittlit" style="color:var(--primary); font-weight:900;">Tima</a>
+        </p>
+    </footer>
 
-    // Конфетти
-    document.querySelector('.logo').addEventListener('click', () => {
-        confetti({particleCount: 300, spread: 120, origin: { y: 0.6 }});
-    });
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const navLinks = document.querySelectorAll('nav a');
+            const pages = document.querySelectorAll('.page');
+            const dayBtns = document.querySelectorAll('.day-btn');
+            const tables = document.querySelectorAll('.schedule-table');
+            const toggle = document.getElementById('themeToggle');
+            const icon = toggle.querySelector('i');
 
-    // Таймер до пары
-    function updateCountdown() {
-        const now = new Date();
-        const nextClass = new Date();
-        nextClass.setHours(9,0,0,0);
-        if (now > nextClass) nextClass.setDate(nextClass.getDate() + 1);
-        const diff = nextClass - now;
-        const h = Math.floor(diff / 3600000);
-        const m = Math.floor((diff % 3600000) / 60000);
-        const s = Math.floor((diff % 60000) / 1000);
-        document.getElementById('countdown').textContent = `До пары: ${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-    }
-    setInterval(updateCountdown, 1000);
-    updateCountdown();
+            // Переключение страниц
+            navLinks.forEach(link => {
+                link.addEventListener('click', e => {
+                    e.preventDefault();
+                    navLinks.forEach(a => a.classList.remove('active'));
+                    pages.forEach(p => { p.classList.remove('active'); p.style.opacity = '0'; });
+                    link.classList.add('active');
+                    const page = document.getElementById(link.dataset.page);
+                    page.classList.add('active');
+                    setTimeout(() => page.style.opacity = '1', 100);
+                });
+            });
 
-    // Переключение секций
-    document.querySelectorAll('nav a').forEach(link => {
-        link.addEventListener('click', e => {
-            e.preventDefault();
-            document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
-            link.classList.add('active');
-            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            document.querySelector(link.getAttribute('href')).classList.add('active');
+            // Переключение дней в расписании
+            dayBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    dayBtns.forEach(b => b.classList.remove('active'));
+                    tables.forEach(t => t.classList.remove('active'));
+                    btn.classList.add('active');
+                    document.getElementById(btn.dataset.day).classList.add('active');
+                });
+            });
+
+            // Тема
+            if (localStorage.getItem('theme') === 'light') {
+                document.documentElement.setAttribute('data-theme', 'light');
+                icon.classList.replace('fa-moon', 'fa-sun');
+            }
+            toggle.addEventListener('click', () => {
+                const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+                document.documentElement.setAttribute('data-theme', isLight ? 'dark' : 'light');
+                icon.classList.toggle('fa-sun');
+                icon.classList.toggle('fa-moon');
+                localStorage.setItem('theme', isLight ? 'dark' : 'light');
+            });
         });
-    });
-
-    // Чат
-    function sendMessage() {
-        const input = document.getElementById('msg-input');
-        if (!input.value.trim()) return;
-        const msg = document.createElement('div');
-        msg.className = 'msg own';
-        msg.textContent = input.value;
-        document.getElementById('messages').appendChild(msg);
-        localStorage.setItem('chat', document.getElementById('messages').innerHTML);
-        input.value = '';
-        document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
-    }
-    if (localStorage.getItem('chat')) {
-        document.getElementById('messages').innerHTML = localStorage.getItem('chat');
-    }
-
-    // Загрузка студентов (можно расширить)
-    const students = [
-        {name: "Абдуллаев Алишер", role: "Староста", img: "https://via.placeholder.com/500/00ffff/000000?text=Алишер"},
-        {name: "Каримова Дилара", role: "Королева", img: "https://via.placeholder.com/500/ff00ff/ffffff?text=Дилара"},
-        // добавляй остальных
-    ];
-    function renderStudents(filter = '') {
-        const grid = document.getElementById('students-grid');
-        grid.innerHTML = '';
-        students.filter(s => s.name.toLowerCase().includes(filter.toLowerCase())).forEach(s => {
-            grid.innerHTML += `
-                <div class="card">
-                    <img src="${s.img}">
-                    <div class="card-info"><h3>${s.name}</h3><p>${s.role}</p></div>
-                </div>`;
-        });
-    }
-    function searchStudents() {
-        renderStudents(document.querySelector('.search-box').value);
-    }
-    renderStudents();
-</script>
+    </script>
 </body>
 </html>
