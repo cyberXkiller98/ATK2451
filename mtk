@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Кнопка со ссылкой</title>
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #f5f5f5;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        a.button {
+            display: inline-block;
+            padding: 20px 40px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #ffffff;
+            background-color: #0078d4;
+            text-decoration: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.2s, transform 0.2s;
+        }
+        a.button:hover {
+            background-color: #005fa3;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <a class="button" href="https://1drv.ms/x/c/648EF3F42CA07E2F/IQD2hImCh6j2R7KczL0TH_z7AezgwepieMQZUelasbOYZRA?e=ceZsmv" target="_blank">
+        Открыть файл
+    </a>
+</body>
+</html>
