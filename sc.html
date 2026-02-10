@@ -1,4 +1,493 @@
-const icon = item.type === 'class' ? '📖' : '☕️';
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Расписание Пар</title>
+    <style>
+        :root {
+            --bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --glass: rgba(255, 255, 255, 0.15);
+            --border: rgba(255, 255, 255, 0.25);
+            --text: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.8);
+            --accent: #ffd700;
+            --accent2: #ff6b6b;
+            --shadow: 0 20px 40px rgba(0,0,0,0.2);
+            --font-size: 18px;
+        }
+
+        [data-theme="night"] {
+            --bg: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            --glass: rgba(255, 255, 255, 0.05);
+            --border: rgba(255, 255, 255, 0.1);
+            --text: #e0e0e0;
+            --text-secondary: rgba(224, 224, 224, 0.7);
+            --accent: #00d9ff;
+            --accent2: #ff00ff;
+            --shadow: 0 20px 40px rgba(0,0,0,0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html {
+            font-size: var(--font-size);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg);
+            background-attachment: fixed;
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.6;
+            transition: all 0.5s ease;
+        }
+
+        .header {
+            padding: 1.2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 1.3rem;
+            font-weight: 800;
+            background: linear-gradient(45deg, var(--accent), var(--accent2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        .theme-toggle {
+            background: var(--glass);
+            border: 2px solid var(--border);
+            color: var(--text);
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow);
+        }
+
+        .theme-toggle:active {
+            transform: scale(0.9);
+        }
+
+        .main {
+            flex: 1;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            max-width: 600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .card {
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(20px);
+            transition: all 0.3s ease;
+        }
+
+        .timer-card {
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .timer-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
+            opacity: 0.15;
+            animation: glow 4s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { transform: scale(1); opacity: 0.1; }
+            50% { transform: scale(1.2); opacity: 0.2; }
+        }
+
+        .status {
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .countdown {
+            font-size: 4rem;
+            font-weight: 200;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -2px;
+            background: linear-gradient(45deg, var(--accent), var(--accent2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+            line-height: 1.1;
+            margin: 1rem 0;
+            text-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+        }
+
+        .time-labels {
+            display: flex;
+            justify-content: center;
+            gap: 2.5rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 500;
+        }
+
+        .progress-container {
+            margin-top: 1.5rem;
+            height: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), var(--accent2));
+            border-radius: 4px;
+            transition: width 1s linear;
+            box-shadow: 0 0 20px var(--accent);
+            position: relative;
+        }
+
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.1rem;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+
+        .current-time {
+            font-family: 'SF Mono', Monaco, monospace;
+            font-weight: 700;
+            color: var(--accent);
+            font-size: 1.2rem;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text);
+        }
+
+        .schedule-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+
+        .schedule-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .schedule-list::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.05);
+            border-radius: 3px;
+        }
+
+        .schedule-list::-webkit-scrollbar-thumb {
+            background: var(--accent);
+            border-radius: 3px;
+        }
+
+        .schedule-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.2rem;
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            font-size: 1.1rem;
+        }
+
+        .schedule-item:active {
+            transform: scale(0.98);
+        }
+
+        .schedule-item.active {
+            background: linear-gradient(135deg, rgba(255,215,0,0.15), rgba(255,0,255,0.15));
+            border-color: var(--accent);
+            box-shadow: 0 0 20px rgba(255,215,0,0.2);
+            transform: scale(1.02);
+        }
+
+        .schedule-item.passed {
+            opacity: 0.4;
+        }
+
+        .item-name {
+            font-weight: 600;
+            font-size: 1.15rem;
+        }
+
+        .item-time {
+            font-family: 'SF Mono', Monaco, monospace;
+            font-size: 1rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .footer {
+            padding: 2rem;
+            text-align: center;
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid var(--border);
+        }
+
+        .tg-link {
+            color: var(--text);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+            padding: 0.8rem 1.5rem;
+            background: linear-gradient(135deg, #0088cc, #00aced);
+            border-radius: 50px;
+            box-shadow: 0 10px 20px rgba(0,136,204,0.3);
+            transition: all 0.3s ease;
+        }
+
+        .tg-link:active {
+            transform: translateY(2px);
+            box-shadow: 0 5px 10px rgba(0,136,204,0.3);
+        }
+
+        .copyright {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            opacity: 0.8;
+        }
+
+        /* Мобильная адаптация */
+        @media (max-width: 480px) {
+            html { font-size: 16px; }
+            .countdown { font-size: 3rem; }
+            .card { padding: 1.5rem; }
+            .time-labels { gap: 1.5rem; }
+        }
+
+        @media (max-width: 360px) {
+            html { font-size: 14px; }
+            .countdown { font-size: 2.5rem; }
+        }
+
+        /* Анимации */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card {
+            animation: fadeIn 0.6s ease forwards;
+        }
+
+        .card:nth-child(1) { animation-delay: 0.1s; }
+        .card:nth-child(2) { animation-delay: 0.2s; }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo">📚 SCHEDULE+5</div>
+        <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Сменить тему">
+            🌙
+        </button>
+    </header>
+
+    <main class="main">
+        <div class="card timer-card">
+            <div class="status" id="statusText">Загрузка...</div>
+            <div class="countdown" id="countdown">00:00:00</div>
+            <div class="time-labels">
+                <span>часы</span>
+                <span>минуты</span>
+                <span>секунды</span>
+            </div>
+            <div class="progress-container">
+                <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+            </div>
+            <div class="info-row">
+                <span>🌍 UTC+5</span>
+                <span class="current-time" id="currentTime">--:--:--</span>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="section-title">📋 Расписание на сегодня</div>
+            <div class="schedule-list" id="scheduleList"></div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <a href="https://t.me/i1alia" class="tg-link" target="_blank">
+            ✈️ @i1alia
+        </a>
+        <div class="copyright">© 2026 • Сделано с ❤️</div>
+    </footer>
+
+    <script>
+        const schedule = [
+            { id: 1, name: "1-я пара", start: 540, end: 620, type: "class" },
+            { id: 2, name: "Перемена", start: 621, end: 629, type: "break" },
+            { id: 3, name: "2-я пара", start: 630, end: 710, type: "class" },
+            { id: 4, name: "Перемена", start: 711, end: 719, type: "break" },
+            { id: 5, name: "3-я пара", start: 720, end: 800, type: "class" },
+            { id: 6, name: "Перемена", start: 801, end: 839, type: "break" },
+            { id: 7, name: "4-я пара", start: 840, end: 920, type: "class" },
+            { id: 8, name: "Перемена", start: 921, end: 929, type: "break" },
+            { id: 9, name: "5-я пара", start: 930, end: 1010, type: "class" },
+            { id: 10, name: "Перемена", start: 1011, end: 1019, type: "break" },
+            { id: 11, name: "6-я пара", start: 1020, end: 1100, type: "class" }
+        ];
+
+        function getUTC5Time() {
+            const now = new Date();
+            return new Date(now.getTime() + (now.getTimezoneOffset() + 300) * 60000);
+        }
+
+        function formatTime(min) {
+            return `${String(Math.floor(min/60)).padStart(2,'0')}:${String(min%60).padStart(2,'0')}`;
+        }
+
+        function getStatus(minutes) {
+            for (let item of schedule) {
+                if (minutes >= item.start && minutes <= item.end) {
+                    return {
+                        text: item.type === 'class' ? `⏳ ${item.name} закончится через` : `☕ ${item.name} через`,
+                        remaining: item.end - minutes,
+                        total: item.end - item.start,
+                        current: item
+                    };
+                }
+            }
+            
+            const isNextDay = minutes > 1100;
+            const target = isNextDay ? (1440 + 540) : 540;
+            const remaining = target - minutes;
+            
+            return {
+                text: isNextDay ? "🌅 Пары завтра через" : "🌅 До начала пар",
+                remaining: remaining,
+                total: remaining,
+                current: null
+            };
+        }
+
+        function update() {
+            const now = getUTC5Time();
+            const h = now.getHours();
+            const m = now.getMinutes();
+            const s = now.getSeconds();
+            const totalMin = h * 60 + m;
+
+            document.getElementById('currentTime').textContent = 
+                `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+
+            const status = getStatus(totalMin);
+            document.getElementById('statusText').textContent = status.text;
+
+            const rh = Math.floor(status.remaining / 60);
+            const rm = status.remaining % 60;
+            const rs = 59 - s;
+            
+            document.getElementById('countdown').textContent = 
+                `${String(rh).padStart(2,'0')}:${String(rm).padStart(2,'0')}:${String(rs).padStart(2,'0')}`;
+
+            const progress = status.current ? 
+                ((status.total - status.remaining) / status.total * 100) : 
+                (totalMin < 540 ? 0 : 100);
+            document.getElementById('progressBar').style.width = `${progress}%`;
+
+            updateList(totalMin);
+        }
+
+        function updateList(currentMin) {
+            const list = document.getElementById('scheduleList');
+            list.innerHTML = '';
+
+            schedule.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'schedule-item';
+                
+                if (currentMin >= item.start && currentMin <= item.end) {
+                    div.classList.add('active');
+                } else if (currentMin > item.end) {
+                    div.classList.add('passed');
+                }
+
+                const icon = item.type === 'class' ? '📖' : '☕';
                 
                 div.innerHTML = `
                     <span class="item-name">${icon} ${item.name}</span>
