@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hujjatlar</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background: linear-gradient(135deg, #0f172a, #1e3a8a);
+    }
+  </style>
+</head>
+<body class="flex items-center justify-center min-h-screen text-white">
+  <div class="text-center space-y-8">
+    <h1 class="text-4xl font-bold tracking-wide">📄 Hujjatlar Sahifasi</h1>
+    <p class="text-gray-300">Kerakli hujjatni tanlang</p>
+
+    <div class="flex flex-col gap-6 items-center">
+      <a href="https://1drv.ms/w/c/648EF3F42CA07E2F/IQDG_mPvwBg5QbI3E2IiJ1b8AblL3SiFpzalZtfeN88YMEk?e=3oS6tM" target="_blank"
+         class="px-10 py-4 bg-blue-500 hover:bg-blue-600 rounded-2xl text-lg font-semibold shadow-lg transform hover:scale-110 transition duration-300">
+        1 Hujjat
+      </a>
+
+      <a href="https://1drv.ms/w/c/648EF3F42CA07E2F/IQB6raTQUQlMQ64830Zt-P-sATY1et6f1ERCSGX9U-uAgt4?e=69WmFx" target="_blank"
+         class="px-10 py-4 bg-green-500 hover:bg-green-600 rounded-2xl text-lg font-semibold shadow-lg transform hover:scale-110 transition duration-300">
+        2 Hujjat
+      </a>
+    </div>
+
+    <div class="mt-10 text-sm text-gray-400">
+      © 2026 Hujjatlar tizimi
+    </div>
+  </div>
+
+  <script>
+    // simple animation on load
+    document.querySelectorAll('a').forEach((btn, index) => {
+      btn.style.opacity = 0;
+      btn.style.transform = 'translateY(30px)';
+      setTimeout(() => {
+        btn.style.transition = 'all 0.6s ease';
+        btn.style.opacity = 1;
+        btn.style.transform = 'translateY(0)';
+      }, 300 * index);
+    });
+  </script>
+</body>
+</html>
