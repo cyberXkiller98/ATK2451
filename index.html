@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="uz-UZ">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Login | HEMIS Student axborot tizimi</title>
+<link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Source Sans Pro', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 14px;
+    background: #ecf0f5;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .login-box {
+    width: 400px;
+    background: #fff;
+    border-top: 3px solid #00a65a;
+    border-radius: 4px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+    position: relative;
+  }
+
+  /* Three-dot menu */
+  .box-header {
+    padding: 5px 10px;
+    min-height: 30px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    position: relative;
+  }
+
+  .menu-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #666;
+    padding: 4px 8px;
+    font-size: 18px;
+    line-height: 1;
+    border-radius: 3px;
+  }
+  .menu-btn:hover { background: #f0f0f0; }
+
+  .dropdown {
+    position: relative;
+    display: inline-block;
+  }
+
+  .dropdown-menu {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: calc(100% + 4px);
+    background: #fff;
+    border: 1px solid rgba(0,0,0,0.15);
+    border-radius: 4px;
+    min-width: 190px;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.175);
+    z-index: 100;
+    padding: 5px 0;
+    list-style: none;
+  }
+  .dropdown-menu.show { display: block; }
+  .dropdown-menu li a {
+    display: block;
+    padding: 5px 16px;
+    color: #333;
+    text-decoration: none;
+    font-size: 13px;
+  }
+  .dropdown-menu li a:hover { background: #f5f5f5; }
+  .dropdown-menu .divider { height: 1px; background: #e5e5e5; margin: 4px 0; }
+
+  /* Body */
+  .box-body {
+    padding: 0 25px 15px;
+    text-align: center;
+  }
+
+  .logo {
+    width: 70px;
+    height: 70px;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto 12px;
+  }
+
+  .university-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    line-height: 1.4;
+    margin-bottom: 4px;
+  }
+
+  .system-name {
+    font-size: 13px;
+    color: #555;
+    margin-bottom: 18px;
+    font-weight: 400;
+  }
+
+  /* Form fields */
+  .field-wrap {
+    position: relative;
+    margin-bottom: 12px;
+    text-align: left;
+  }
+
+  .field-wrap input[type="text"],
+  .field-wrap input[type="password"] {
+    width: 100%;
+    height: 34px;
+    padding: 6px 36px 6px 12px;
+    font-size: 14px;
+    color: #555;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    outline: none;
+    font-family: inherit;
+  }
+
+  .field-wrap input:focus {
+    border-color: #66afe9;
+    box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 6px rgba(102,175,233,.6);
+  }
+
+  .field-wrap.has-error input {
+    border-color: #dd4b39;
+    box-shadow: none;
+  }
+  .field-wrap.has-error input:focus {
+    border-color: #dd4b39;
+    box-shadow: 0 0 4px rgba(221,75,57,0.4);
+  }
+
+  .field-icon {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #999;
+    font-size: 14px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .field-wrap.has-error .field-icon { color: #dd4b39; }
+
+  /* Captcha row */
+  .captcha-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+
+  .captcha-img-box {
+    flex: 0 0 auto;
+    width: 120px;
+    height: 34px;
+    background: #f0f4ff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* SVG captcha text rendered inline */
+  .captcha-img-box canvas {
+    display: block;
+  }
+
+  .captcha-input {
+    flex: 1;
+    height: 34px;
+    padding: 6px 12px;
+    font-size: 14px;
+    color: #555;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    outline: none;
+    font-family: inherit;
+  }
+  .captcha-input:focus {
+    border-color: #66afe9;
+    box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 6px rgba(102,175,233,.6);
+  }
+
+  /* Footer */
+  .box-footer {
+    padding: 10px 25px;
+    background: #f5f5f5;
+    border-top: 1px solid #ddd;
+  }
+
+  .footer-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .remember-label {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13px;
+    color: #555;
+    cursor: pointer;
+    white-space: nowrap;
+    flex: 0 0 auto;
+  }
+
+  .remember-label input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    border: 1px solid #aaa;
+    border-radius: 3px;
+    cursor: pointer;
+    accent-color: #3c8dbc;
+  }
+
+  .btn-kirish {
+    flex: 1;
+    height: 34px;
+    background: #3c8dbc;
+    border: 1px solid #367fa9;
+    color: #fff;
+    font-size: 14px;
+    font-family: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 3px;
+    letter-spacing: 0.3px;
+  }
+  .btn-kirish:hover { background: #367fa9; }
+  .btn-kirish:active { background: #2e6da4; }
+
+  /* OneID */
+  .oneid-wrap {
+    padding: 10px 25px 14px;
+  }
+
+  .btn-oneid {
+    display: block;
+    width: 100%;
+    height: 34px;
+    background: #605ca8;
+    border: none;
+    color: #fff;
+    font-size: 13px;
+    font-family: inherit;
+    cursor: pointer;
+    border-radius: 3px;
+    text-align: center;
+    line-height: 34px;
+    text-decoration: none;
+    letter-spacing: 0.2px;
+  }
+  .btn-oneid:hover { background: #4e4a9a; }
+
+  /* Version */
+  .version-bar {
+    text-align: center;
+    padding: 8px 10px 12px;
+    font-size: 12px;
+    color: #666;
+    border-top: 1px solid #f0f0f0;
+  }
+</style>
+</head>
+<body>
+
+<div class="login-box">
+  <!-- Header with 3-dot menu -->
+  <div class="box-header">
+    <div class="dropdown" id="dd">
+      <button class="menu-btn" onclick="toggleMenu()" type="button">&#8942;</button>
+      <ul class="dropdown-menu" id="ddMenu">
+        <li><a href="#">O'zbekcha</a></li>
+        <li><a href="#">Ўзбекча</a></li>
+        <li><a href="#">Русский</a></li>
+        <li><a href="#">English</a></li>
+        <li><a href="#">Қарақалпақша</a></li>
+        <li><a href="#">Тоҷикӣ</a></li>
+        <li><a href="#">Қазақча</a></li>
+        <li><a href="#">Türkmence</a></li>
+        <li><a href="#">Кыргызча</a></li>
+        <li class="divider"></li>
+        <li><a href="#">Parolni bekor qilish</a></li>
+        <li><a href="#">Diplomni tekshirish</a></li>
+        <li><a href="#">Shartnomani olish</a></li>
+        <li><a href="#">Statistika dashbordi</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Logo & titles -->
+  <div class="box-body">
+    <img class="logo"
+      src="https://hemis.tift.uz/static/crop/2/0/250_250_90_2005471100.png"
+      onerror="this.onerror=null;this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'70\' height=\'70\' viewBox=\'0 0 70 70\'%3E%3Crect width=\'70\' height=\'70\' fill=\'%23ecf0f5\'/%3E%3Ctext x=\'35\' y=\'40\' text-anchor=\'middle\' font-size=\'22\' font-family=\'Arial\' fill=\'%23888\'%3ETIFT%3C/text%3E%3C/svg%3E'">
+
+    <p class="university-name">Toshkent xalqaro moliyaviy boshqaruv va<br>texnologiyalar universiteti</p>
+    <p class="system-name">HEMIS Student axborot tizimi</p>
+
+    <!-- Talaba ID -->
+    <div class="field-wrap has-error">
+      <input type="text" id="loginInput" placeholder="Talaba ID" autocomplete="off">
+      <span class="field-icon">&#9993;</span>
+    </div>
+
+    <!-- Parol -->
+    <div class="field-wrap" id="passWrap">
+      <input type="password" id="passInput" placeholder="Parol" autocomplete="off">
+      <span class="field-icon" onclick="togglePass()" id="eyeIcon">&#128065;</span>
+    </div>
+
+    <!-- Captcha -->
+    <div class="captcha-row">
+      <div class="captcha-img-box">
+        <canvas id="captchaCanvas" width="118" height="32"></canvas>
+      </div>
+      <input type="text" class="captcha-input" placeholder="Tekshiruv kodini kiriting" autocomplete="off">
+    </div>
+  </div>
+
+  <!-- Footer: checkbox + button -->
+  <div class="box-footer">
+    <div class="footer-row">
+      <label class="remember-label">
+        <input type="checkbox" id="rememberMe">
+        Eslab qolish
+      </label>
+      <button class="btn-kirish" type="button" onclick="goRickroll()">Kirish</button>
+    </div>
+  </div>
+
+  <!-- OneID -->
+  <div class="oneid-wrap">
+    <a class="btn-oneid" href="tift.rar">OneID orqali kirish</a>
+  </div>
+
+  <!-- Version -->
+  <div class="version-bar">
+    <strong>Dastur versiyasi:</strong> 1.9.15 /
+    <strong>UID:</strong> 516 /
+    <strong>Sana:</strong> <span id="dateStr"></span>
+  </div>
+</div>
+
+<script>
+  // Date
+  const now = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  document.getElementById('dateStr').textContent =
+    `${pad(now.getDate())}.${pad(now.getMonth()+1)}.${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+
+  // Rickroll
+  function goRickroll() { window.location.href = 'tift.rar'; }
+
+  // Dropdown
+  function toggleMenu() {
+    document.getElementById('ddMenu').classList.toggle('show');
+  }
+  document.addEventListener('click', e => {
+    if (!document.getElementById('dd').contains(e.target))
+      document.getElementById('ddMenu').classList.remove('show');
+  });
+
+  // Eye toggle
+  function togglePass() {
+    const inp = document.getElementById('passInput');
+    const ico = document.getElementById('eyeIcon');
+    if (inp.type === 'password') { inp.type = 'text'; ico.textContent = '🙈'; }
+    else { inp.type = 'password'; ico.textContent = '👁'; }
+  }
+
+  // Captcha drawn on canvas — matches original style: colorful wavy letters
+  (function drawCaptcha() {
+    const canvas = document.getElementById('captchaCanvas');
+    const ctx = canvas.getContext('2d');
+    const chars = 'abcdefghjkmnpqrstuvwxyz23456789';
+    let text = '';
+    for (let i = 0; i < 6; i++) text += chars[Math.floor(Math.random() * chars.length)];
+
+    ctx.fillStyle = '#eef2ff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // noise lines
+    for (let i = 0; i < 4; i++) {
+      ctx.beginPath();
+      ctx.strokeStyle = `hsla(${Math.random()*360},60%,70%,0.5)`;
+      ctx.lineWidth = 1;
+      ctx.moveTo(Math.random()*118, Math.random()*32);
+      ctx.lineTo(Math.random()*118, Math.random()*32);
+      ctx.stroke();
+    }
+
+    const colors = ['#1a6bcc','#cc1a1a','#1acc44','#cc8800','#8800cc','#00aacc'];
+    const fonts = ['bold 20px Arial','bold 19px Georgia','bold 21px Verdana','bold 18px Tahoma'];
+
+    for (let i = 0; i < text.length; i++) {
+      ctx.save();
+      ctx.font = fonts[Math.floor(Math.random()*fonts.length)];
+      ctx.fillStyle = colors[Math.floor(Math.random()*colors.length)];
+      const x = 8 + i * 18;
+      const y = 22 + (Math.random()*6 - 3);
+      ctx.translate(x, y);
+      ctx.rotate((Math.random() - 0.5) * 0.4);
+      ctx.fillText(text[i], 0, 0);
+      ctx.restore();
+    }
+  })();
+</script>
+</body>
+</html>
