@@ -11,41 +11,40 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-// Подключение к Supabase
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 
-// Настройка приема больших данных (для передача фотографий в Base64)
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ limit: '10mb', extended: true }));
-
-// Настройка статических файлов из папки public
+// Увеличенный лимит для аудио и картинок (15MB)
+app.use(express.json({ limit: '15mb' }));
+app.use(express.urlencoded({ limit: '15mb', extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ----------------------------------------------------
-// АНТИСПАМ: Карта хранения времени последнего сообщения
-// ----------------------------------------------------
+// Антиспам (1.5 сек между сообщениями)
 const lastMessageTimes = new Map();
-
 function isSpamming(userId) {
     const now = Date.now();
     const lastTime = lastMessageTimes.get(userId) || 0;
-    if (now - lastTime < 1500) {
-        return true;
-    }
+    if (now - lastTime < 1500) return true;
     lastMessageTimes.set(userId, now);
     return false;
 }
 
+// Отслеживание онлайна (userId -> socketId)
+const onlineUsers = new Map();
+
 // ====================================================
-// REST API: АВТОРИЗАЦИЯ И ПРОФИЛИ
+// REST API
 // ====================================================
 
+// Регистрация с уникальным тэгом
 app.post('/api/register', async (req, res) => {
-    const { email, nickname, password } = req.body;
+    const { email, nickname, password, tag } = req.body;
 
     if (!email || !nickname || !password) {
-        return res.status(400).json({ error: 'Заполните все поля!' });
+        return res.status(400).json({ error: 'Заполните обязательные поля!' });
     }
+
+    // Формируем тег пользователя
+    const userTag = tag ? tag.replace('@', '').toLowerCase().trim() : `user_${Math.floor(1000 + Math.random() * 9000)}`;
 
     try {
         const { data: existingUser } = await supabase
@@ -55,18 +54,18 @@ app.post('/api/register', async (req, res) => {
             .maybeSingle();
 
         if (existingUser) {
-            return res.status(400).json({ error: 'Пользователь с таким Email уже существует' });
+            return res.status(400).json({ error: 'Email уже зарегистрирован!' });
         }
 
         const passwordHash = await bcrypt.hash(password, 10);
 
         const { error } = await supabase
             .from('users')
-            .insert([{ email, nickname, password_hash: passwordHash }]);
+            .insert([{ email, nickname, tag: userTag, password_hash: passwordHash }]);
 
         if (error) throw error;
 
-        return res.json({ success: true, message: 'Регистрация прошла успешно!' });
+        return res.json({ success: true, message: 'Регистрация успешна!' });
 
     } catch (err) {
         console.error('Ошибка регистрации:', err);
@@ -74,6 +73,7 @@ app.post('/api/register', async (req, res) => {
     }
 });
 
+// Вход
 app.post('/api/login', async (req, res) => {
     const { email, password } = req.body;
 
@@ -84,7 +84,7 @@ app.post('/api/login', async (req, res) => {
     try {
         const { data: user, error } = await supabase
             .from('users')
-            .select('id, email, nickname, password_hash, created_at, avatar_url, bio')
+            .select('id, email, nickname, tag, password_hash, created_at, avatar_url, bio')
             .eq('email', email)
             .maybeSingle();
 
@@ -93,7 +93,6 @@ app.post('/api/login', async (req, res) => {
         }
 
         const isPasswordValid = await bcrypt.compare(password, user.password_hash);
-
         if (!isPasswordValid) {
             return res.status(400).json({ error: 'Неверный Email или пароль' });
         }
@@ -103,6 +102,7 @@ app.post('/api/login', async (req, res) => {
                 id: user.id,
                 email: user.email,
                 nickname: user.nickname,
+                tag: user.tag || `user_${user.id}`,
                 created_at: user.created_at,
                 avatar_url: user.avatar_url || '',
                 bio: user.bio || ''
@@ -115,61 +115,88 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
+// Поиск пользователя по Tag или Никнейму
+app.get('/api/users/search', async (req, res) => {
+    const query = req.query.q?.trim().toLowerCase();
+    if (!query) return res.json({ users: [] });
+
+    try {
+        const { data: users, error } = await supabase
+            .from('users')
+            .select('id, nickname, tag, avatar_url, bio')
+            .or(`nickname.ilike.%${query}%,tag.ilike.%${query}%`)
+            .limit(10);
+
+        if (error) throw error;
+        return res.json({ users: users || [] });
+    } catch (err) {
+        return res.status(500).json({ error: 'Ошибка поиска' });
+    }
+});
+
+// Получение профиля
 app.get('/api/user/:id', async (req, res) => {
     try {
         const { data: user, error } = await supabase
             .from('users')
-            .select('id, nickname, avatar_url, bio, created_at')
+            .select('id, nickname, tag, avatar_url, bio, created_at')
             .eq('id', req.params.id)
             .maybeSingle();
 
-        if (error || !user) {
-            return res.status(404).json({ error: 'Пользователь не найден' });
-        }
-
+        if (error || !user) return res.status(404).json({ error: 'Пользователь не найден' });
+        
+        // Добавляем статус онлайн
+        user.is_online = onlineUsers.has(String(user.id));
         return res.json({ user });
     } catch (err) {
-        return res.status(500).json({ error: 'Ошибка получения профиля' });
+        return res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
 
+// Обновление профиля
 app.post('/api/user/update-profile', async (req, res) => {
-    const { userId, avatarUrl, bio } = req.body;
+    const { userId, avatarUrl, bio, tag } = req.body;
+    if (!userId) return res.status(400).json({ error: 'Нет ID' });
 
-    if (!userId) return res.status(400).json({ error: 'Не указан ID пользователя' });
+    const cleanTag = tag ? tag.replace('@', '').toLowerCase().trim() : null;
 
     try {
+        const updateData = { avatar_url: avatarUrl, bio: bio };
+        if (cleanTag) updateData.tag = cleanTag;
+
         const { error } = await supabase
             .from('users')
-            .update({ avatar_url: avatarUrl, bio: bio })
+            .update(updateData)
             .eq('id', userId);
 
         if (error) throw error;
-
-        return res.json({ success: true, message: 'Профиль обновлен!' });
+        return res.json({ success: true });
     } catch (err) {
-        console.error('Ошибка обновления профиля:', err);
         return res.status(500).json({ error: 'Не удалось обновить профиль' });
     }
 });
 
 // ====================================================
-// SOCKET.IO: ОБЩИЙ ЧАТ И ЛИЧНЫЕ СООБЩЕНИЯ (1-на-1)
+// SOCKET.IO (ЧАТ В РЕАЛЬНОМ ВРЕМЕНИ)
 // ====================================================
 
 io.on('connection', (socket) => {
-    console.log(`[Socket] Пользователь подключен: ${socket.id}`);
+    let currentSocketUserId = null;
 
+    // Авторизация сокета и статус онлайн
     socket.on('join-user-room', (userId) => {
         if (!userId) return;
-        const roomName = `user_${userId}`;
-        socket.join(roomName);
-        console.log(`[Socket] Пользователь ${userId} вошел в комнату ${roomName}`);
+        currentSocketUserId = String(userId);
+        
+        socket.join(`user_${userId}`);
+        onlineUsers.set(currentSocketUserId, socket.id);
+
+        // Рассылаем всем статус «онлайн»
+        io.emit('user-status-changed', { userId: currentSocketUserId, isOnline: true });
     });
 
+    // История общего чата
     socket.on('get-history', async (data) => {
-        const userCreatedAt = data?.userCreatedAt;
-
         try {
             let query = supabase
                 .from('messages')
@@ -177,77 +204,73 @@ io.on('connection', (socket) => {
                 .order('created_at', { ascending: true })
                 .limit(50);
 
-            if (userCreatedAt) {
-                query = query.gte('created_at', userCreatedAt);
+            if (data?.userCreatedAt) {
+                query = query.gte('created_at', data.userCreatedAt);
             }
 
-            const { data: messages, error } = await query;
-
-            if (!error && messages) {
-                socket.emit('history-loaded', messages);
-            }
+            const { data: messages } = await query;
+            if (messages) socket.emit('history-loaded', messages);
         } catch (err) {
-            console.error('Ошибка загрузки истории общего чата:', err);
+            console.error('Ошибка истории:', err);
         }
     });
 
+    // Отправка сообщения в общий чат (текст, картинка, голосовое)
     socket.on('send-message', async (data) => {
-        const { userId, nickname, text, imageUrl } = data;
-
-        if (!userId || (!text && !imageUrl)) return;
+        const { userId, nickname, text, imageUrl, voiceUrl } = data;
+        if (!userId || (!text && !imageUrl && !voiceUrl)) return;
 
         if (isSpamming(userId)) {
-            return socket.emit('spam-warning', 'Слишком часто! Подождите 1.5 секунды.');
+            return socket.emit('spam-warning', 'Слишком часто! Подождите 1.5 сек.');
         }
 
         try {
             const { data: newMessage, error } = await supabase
                 .from('messages')
-                .insert([{ 
-                    user_id: userId, 
-                    nickname: nickname, 
-                    text: text || '', 
-                    image_url: imageUrl || '' 
+                .insert([{
+                    user_id: userId,
+                    nickname: nickname,
+                    text: text || '',
+                    image_url: imageUrl || '',
+                    voice_url: voiceUrl || ''
                 }])
                 .select()
                 .single();
 
             if (error) throw error;
-
             io.emit('new-message', newMessage);
 
         } catch (err) {
-            console.error('Ошибка отправки сообщения в общий чат:', err);
+            console.error('Ошибка отправки сообщения:', err);
         }
     });
 
+    // История лички
     socket.on('get-private-history', async (data) => {
         const { myId, otherId } = data;
         if (!myId || !otherId) return;
 
         try {
-            const { data: messages, error } = await supabase
+            const { data: messages } = await supabase
                 .from('private_messages')
                 .select('*')
                 .or(`and(sender_id.eq.${myId},receiver_id.eq.${otherId}),and(sender_id.eq.${otherId},receiver_id.eq.${myId})`)
                 .order('created_at', { ascending: true })
                 .limit(100);
 
-            if (!error && messages) {
-                socket.emit('private-history-loaded', { otherId, messages });
-            }
+            if (messages) socket.emit('private-history-loaded', { otherId, messages });
         } catch (err) {
-            console.error('Ошибка загрузки личных сообщений:', err);
+            console.error(err);
         }
     });
 
+    // Отправка личного сообщения
     socket.on('send-private-message', async (data) => {
-        const { senderId, receiverId, senderNickname, text, imageUrl } = data;
-
-        if (!senderId || !receiverId || (!text && !imageUrl)) return;
+        const { senderId, receiverId, senderNickname, text, imageUrl, voiceUrl } = data;
+        if (!senderId || !receiverId || (!text && !imageUrl && !voiceUrl)) return;
 
         if (isSpamming(senderId)) {
-            return socket.emit('spam-warning', 'Слишком часто! Подождите 1.5 секунды.');
+            return socket.emit('spam-warning', 'Слишком часто! Подождите 1.5 сек.');
         }
 
         try {
@@ -258,7 +281,8 @@ io.on('connection', (socket) => {
                     receiver_id: receiverId,
                     sender_nickname: senderNickname,
                     text: text || '',
-                    image_url: imageUrl || ''
+                    image_url: imageUrl || '',
+                    voice_url: voiceUrl || ''
                 }])
                 .select()
                 .single();
@@ -269,19 +293,22 @@ io.on('connection', (socket) => {
             io.to(`user_${receiverId}`).emit('new-private-message', newPrivateMsg);
 
         } catch (err) {
-            console.error('Ошибка отправки личного сообщения:', err);
+            console.error(err);
         }
     });
 
-    socket.on('typing-private', (data) => {
-        const { senderNickname, receiverId } = data;
-        if (receiverId) {
-            io.to(`user_${receiverId}`).emit('user-typing', { senderNickname });
+    // Индикатор "Печатает..."
+    socket.on('typing-start', (data) => {
+        if (data.receiverId) {
+            io.to(`user_${data.receiverId}`).emit('user-typing', { senderId: data.senderId, nickname: data.nickname });
         }
     });
 
     socket.on('disconnect', () => {
-        console.log(`[Socket] Пользователь отключился: ${socket.id}`);
+        if (currentSocketUserId) {
+            onlineUsers.delete(currentSocketUserId);
+            io.emit('user-status-changed', { userId: currentSocketUserId, isOnline: false });
+        }
     });
 });
 
