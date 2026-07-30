@@ -2,7 +2,7 @@ require('dotenv').config();
 
 const express = require('express');
 const http = require('http');
-const path = require('path'); // Подключаем встроенный модуль path
+const path = require('path');
 const { Server } = require('socket.io');
 const { createClient } = require('@supabase/supabase-js');
 const bcrypt = require('bcryptjs');
@@ -14,15 +14,33 @@ const io = new Server(server);
 // Подключение к Supabase
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 
-app.use(express.json());
+// Настройка приема больших данных (чтобы передавать изображения в Base64)
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
-// НАДЕЖНЫЙ ПУТЬ К ПАПКЕ PUBLIC ДЛЯ LINUX (Используем path.join)
+// Настройка статических файлов из папки public
 app.use(express.static(path.join(__dirname, 'public')));
 
+// ----------------------------------------------------
+// АНТИСПАМ: Карта хранения времени последнего сообщения
+// ----------------------------------------------------
+const lastMessageTimes = new Map(); // userId -> timestamp
+
+function isSpamming(userId) {
+    const now = Date.now();
+    const lastTime = lastMessageTimes.get(userId) || 0;
+    if (now - lastTime < 1500) { // Ограничение 1.5 секунды
+        return true;
+    }
+    lastMessageTimes.set(userId, now);
+    return false;
+}
+
 // ====================================================
-// REST API: РЕГИСТРАЦИЯ И ВХОД
+// REST API: АВТОРИЗАЦИЯ И ПРОФИЛИ
 // ====================================================
 
+// 1. Регистрация
 app.post('/api/register', async (req, res) => {
     const { email, nickname, password } = req.body;
 
@@ -35,7 +53,7 @@ app.post('/api/register', async (req, res) => {
             .from('users')
             .select('id')
             .eq('email', email)
-            .single();
+            .maybeSingle();
 
         if (existingUser) {
             return res.status(400).json({ error: 'Пользователь с таким Email уже существует' });
@@ -57,6 +75,7 @@ app.post('/api/register', async (req, res) => {
     }
 });
 
+// 2. Вход
 app.post('/api/login', async (req, res) => {
     const { email, password } = req.body;
 
@@ -67,9 +86,9 @@ app.post('/api/login', async (req, res) => {
     try {
         const { data: user, error } = await supabase
             .from('users')
-            .select('*')
+            .select('id, email, nickname, password_hash, created_at, avatar_url, bio')
             .eq('email', email)
-            .single();
+            .maybeSingle();
 
         if (error || !user) {
             return res.status(400).json({ error: 'Неверный Email или пароль' });
@@ -85,7 +104,10 @@ app.post('/api/login', async (req, res) => {
             user: {
                 id: user.id,
                 email: user.email,
-                nickname: user.nickname
+                nickname: user.nickname,
+                created_at: user.created_at,
+                avatar_url: user.avatar_url || '',
+                bio: user.bio || ''
             }
         });
 
@@ -95,56 +117,97 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
+// 3. Получение чужого профиля по ID
+app.get('/api/user/:id', async (req, res) => {
+    try {
+        const { data: user, error } = await supabase
+            .from('users')
+            .select('id, nickname, avatar_url, bio, created_at')
+            .eq('id', req.params.id)
+            .maybeSingle();
+
+        if (error || !user) {
+            return res.status(404).json({ error: 'Пользователь не найден' });
+        }
+
+        return res.json({ user });
+    } catch (err) {
+        return res.status(500).json({ error: 'Ошибка получения профиля' });
+    }
+});
+
+// 4. Обновление собственного профиля (аватар / о себе)
+app.post('/api/user/update-profile', async (req, res) => {
+    const { userId, avatarUrl, bio } = req.body;
+
+    if (!userId) return res.status(400).json({ error: 'Не указан ID пользователя' });
+
+    try {
+        const { error } = await supabase
+            .from('users')
+            .update({ avatar_url: avatarUrl, bio: bio })
+            .eq('id', userId);
+
+        if (error) throw error;
+
+        return res.json({ success: true, message: 'Профиль обновлен!' });
+    } catch (err) {
+        console.error('Ошибка обновления профиля:', err);
+        return res.status(500).json({ error: 'Не удалось обновить профиль' });
+    }
+});
+
 // ====================================================
-// SOCKET.IO: ЧАТ В РЕАЛЬНОМ ВРЕМЕНИ
+// SOCKET.IO: ОБЩИЙ ЧАТ И ЛИЧНЫЕ СООБЩЕНИЯ (1-на-1)
 // ====================================================
 
 io.on('connection', (socket) => {
     console.log(`[Socket] Пользователь подключен: ${socket.id}`);
 
-    socket.on('get-history', async () => {
+    // Вход пользователя в личную комнату Socket.io
+    socket.on('join-user-room', (userId) => {
+        if (!userId) return;
+        const roomName = `user_${userId}`;
+        socket.join(roomName);
+        console.log(`[Socket] Пользователь ${userId} вошел в комнату ${roomName}`);
+    });
+
+    // ----------------------------------------------------
+    // ОБЩИЙ ЧАТ (ГИГАЧАТ)
+    // ----------------------------------------------------
+
+    // Получение истории общего чата (ТОЛЬКО ПОСЛЕ ДАТЫ РЕГИСТРАЦИИ ПОЛЬЗОВАТЕЛЯ)
+    socket.on('get-history', async (data) => {
+        const userCreatedAt = data?.userCreatedAt;
+
         try {
-            const { data: messages, error } = await supabase
+            let query = supabase
                 .from('messages')
                 .select('*')
                 .order('created_at', { ascending: true })
                 .limit(50);
 
+            // Фильтр: сообщения только созданные ПОСЛЕ даты регистрации пользователя
+            if (userCreatedAt) {
+                query = query.gte('created_at', userCreatedAt);
+            }
+
+            const { data: messages, error } = await query;
+
             if (!error && messages) {
                 socket.emit('history-loaded', messages);
             }
         } catch (err) {
-            console.error('Ошибка загрузки истории:', err);
+            console.error('Ошибка загрузки истории общего чата:', err);
         }
     });
 
+    // Отправка сообщения в общий чат (с антиспамом и картинками)
     socket.on('send-message', async (data) => {
-        const { userId, nickname, text } = data;
+        const { userId, nickname, text, imageUrl } = data;
 
-        if (!text || !nickname) return;
+        if (!userId || (!text && !imageUrl)) return;
 
-        try {
-            const { data: newMessage, error } = await supabase
-                .from('messages')
-                .insert([{ user_id: userId, nickname, text }])
-                .select()
-                .single();
-
-            if (error) throw error;
-
-            io.emit('new-message', newMessage);
-
-        } catch (err) {
-            console.error('Ошибка сохранения сообщения:', err);
-        }
-    });
-
-    socket.on('disconnect', () => {
-        console.log(`[Socket] Пользователь отключился: ${socket.id}`);
-    });
-});
-
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-    console.log(`🚀 Сервер запущен на порту ${PORT}`);
-});
+        // Проверка Антиспама
+        if (isSpamming(userId)) {
+            ret
