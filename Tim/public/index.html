@@ -3,115 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Telegram Web Messenger</title>
+    <title>Web Messenger</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <!-- ЭКРАН АВТОРИЗАЦИИ / РЕГИСТРАЦИИ -->
-    <div id="auth-screen" class="auth-overlay">
-        <div class="auth-card">
-            <div class="auth-logo">💬</div>
-            <h2 id="auth-title">Вход в Telegram Web</h2>
+    <div id="auth-screen" class="auth-wrapper">
+        <div class="auth-box">
+            <div class="brand-badge">⚡ Web Messenger</div>
+            <h2 id="auth-title">Вход в аккаунт</h2>
+            
             <form id="auth-form">
-                <div class="input-group hidden" id="nickname-group">
-                    <input type="text" id="nickname" placeholder="Придумайте Никнейм" autocomplete="off">
+                <div class="input-field hidden" id="nickname-group">
+                    <label for="nickname">Никнейм</label>
+                    <input type="text" id="nickname" placeholder="Ваш никнейм" autocomplete="off">
                 </div>
-                <div class="input-group">
-                    <input type="email" id="email" placeholder="Email адрес" required>
+
+                <div class="input-field">
+                    <label for="email">Email адрес</label>
+                    <input type="email" id="email" placeholder="name@example.com" required>
                 </div>
-                <div class="input-group">
-                    <input type="password" id="password" placeholder="Пароль" required>
+
+                <div class="input-field">
+                    <label for="password">Пароль</label>
+                    <input type="password" id="password" placeholder="••••••••" required>
                 </div>
-                <div id="auth-error" class="error-message hidden"></div>
+
+                <div id="auth-error" class="form-error hidden"></div>
+
                 <button type="submit" id="auth-btn" class="btn btn-primary">Войти</button>
             </form>
-            <div class="auth-toggle">
+
+            <div class="auth-footer">
                 <span id="toggle-text">Ещё нет аккаунта?</span>
-                <button type="button" id="toggle-btn" class="btn-link">Зарегистрироваться</button>
+                <button type="button" id="toggle-btn" class="btn-text">Зарегистрироваться</button>
             </div>
         </div>
     </div>
 
-    <!-- ГЛАВНЫЙ ИНТЕРФЕЙС МЕССЕНДЖЕРА -->
-    <div id="app-screen" class="telegram-app hidden">
+    <!-- ГЛАВНЫЙ ИНТЕРФЕЙС ПРИЛОЖЕНИЯ -->
+    <div id="app-screen" class="app-layout hidden">
 
-        <!-- ЛЕВАЯ ПАНЕЛЬ: СПИСОК ЧАТОВ -->
-        <aside class="sidebar" id="sidebar">
-            <header class="sidebar-header">
-                <div class="my-profile-btn" id="my-profile-btn">
+        <!-- СИДЕБАР (БОКОВАЯ ПАНЕЛЬ) -->
+        <aside class="sidebar">
+            <div class="user-bar">
+                <div class="user-preview" id="my-profile-trigger">
                     <div class="avatar" id="my-avatar">U</div>
-                    <div class="my-details">
-                        <span id="my-nickname" class="my-name">Пользователь</span>
-                        <span class="my-status">Мой профиль ⚙️</span>
+                    <div class="user-meta">
+                        <span id="my-nickname" class="nickname">Пользователь</span>
+                        <span class="status-online">● онлайн</span>
                     </div>
                 </div>
                 <button id="logout-btn" class="btn-icon" title="Выйти">🚪</button>
-            </header>
-
-            <div class="search-bar">
-                <input type="text" id="chat-search" placeholder="Поиск или новый диалог...">
             </div>
 
-            <!-- Таблица чатов -->
-            <div class="chats-list" id="chats-list">
-                <!-- Закрепленный Общий Чат -->
-                <div class="chat-item active" id="chat-item-global" data-type="global">
-                    <div class="avatar avatar-global">🌐</div>
-                    <div class="chat-item-info">
-                        <div class="chat-item-top">
-                            <span class="chat-name">Общий Чат (Гигачат)</span>
-                            <span class="chat-time" id="global-last-time"></span>
+            <!-- Разделы чатов -->
+            <div class="chat-sections">
+                <div class="section-label">Главный канал</div>
+                <div class="chat-card active" id="global-chat-card">
+                    <div class="card-icon">🌐</div>
+                    <div class="card-info">
+                        <div class="card-title-row">
+                            <span class="card-title">Общий чат</span>
+                            <span class="card-time" id="global-time"></span>
                         </div>
-                        <div class="chat-item-bottom">
-                            <span class="chat-preview" id="global-last-preview">Нажмите, чтобы открыть чат</span>
-                        </div>
+                        <span class="card-preview" id="global-preview">Все пользователи</span>
                     </div>
                 </div>
 
-                <!-- Контейнер для списка личных диалогов -->
-                <div class="section-title">Личные сообщения</div>
-                <div id="private-chats-container">
-                    <!-- Диалоги будут динамически добавляться через JS -->
+                <div class="section-label">Личные диалоги</div>
+                <div class="direct-chats-list" id="direct-chats-list">
+                    <!-- Диалоги динамически создаются здесь -->
                 </div>
             </div>
         </aside>
 
-        <!-- ПРАВАЯ ПАНЕЛЬ: АКНО ЧАТА -->
-        <main class="chat-window" id="chat-window">
-            
-            <!-- Шапка текущего чата -->
-            <header class="chat-window-header">
-                <button id="mobile-back-btn" class="btn-icon mobile-only">←</button>
-                <div class="current-chat-info" id="current-chat-header-info">
-                    <div class="avatar" id="chat-header-avatar">🌐</div>
+        <!-- ГЛАВНАЯ ОБЛАСТЬ ЧАТА -->
+        <main class="chat-workspace">
+            <!-- Шапка чата -->
+            <header class="workspace-header">
+                <button id="back-to-sidebar-btn" class="btn-icon mobile-only">←</button>
+                <div class="active-chat-info" id="active-chat-info">
+                    <div class="avatar" id="header-avatar">🌐</div>
                     <div>
-                        <h3 id="chat-header-title">Общий Чат (Гигачат)</h3>
-                        <span id="chat-header-subtitle" class="subtitle">● Все зарегистрированные пользователи</span>
+                        <h3 id="header-title">Общий чат</h3>
+                        <span id="header-subtitle" class="subtitle">Публичная комната</span>
                     </div>
                 </div>
             </header>
 
-            <!-- Область сообщений -->
-            <div id="messages-container" class="messages-container"></div>
+            <!-- Лента сообщений -->
+            <div id="messages-container" class="messages-scroll-area"></div>
 
-            <!-- Форма отправки сообщения -->
-            <footer class="chat-input-area">
-                <form id="message-form" class="message-form">
-                    <label for="image-input" class="btn-icon attachment-btn" title="Прикрепить изображение">
-                        📎
+            <!-- Ввод сообщения -->
+            <footer class="workspace-footer">
+                <form id="message-form" class="send-form">
+                    <label for="image-input" class="attach-btn" title="Прикрепить изображение">
+                        📷
                     </label>
                     <input type="file" id="image-input" accept="image/*" hidden>
 
                     <input type="text" id="message-input" placeholder="Напишите сообщение..." autocomplete="off">
                     
-                    <button type="submit" id="send-btn" class="btn-send" title="Отправить">
-                        ➔
+                    <button type="submit" id="send-btn" class="btn btn-primary btn-send">
+                        <span>Отправить</span>
                     </button>
                 </form>
 
-                <div id="image-preview" class="image-preview hidden">
-                    <span>🖼️ Фото прикреплено</span>
+                <div id="image-preview-bar" class="image-preview-bar hidden">
+                    <span>🖼️ Фотография готова к отправке</span>
                     <button id="remove-image-btn" type="button">✖</button>
                 </div>
             </footer>
@@ -119,34 +120,38 @@
     </div>
 
     <!-- МОДАЛЬНОЕ ОКНО ПРОФИЛЯ -->
-    <div id="profile-modal" class="modal-overlay hidden">
-        <div class="modal-card">
-            <button class="modal-close" id="close-modal-btn">✖</button>
-            <div class="profile-header">
+    <div id="profile-modal" class="modal-backdrop hidden">
+        <div class="modal-window">
+            <button class="modal-close-btn" id="close-modal-btn">✖</button>
+            
+            <div class="profile-summary">
                 <div class="avatar-large" id="modal-avatar">U</div>
                 <h3 id="modal-nickname">Никнейм</h3>
-                <span id="modal-date" class="modal-date">В сети</span>
+                <span id="modal-date" class="register-date">Зарегистрирован: ...</span>
             </div>
 
-            <div class="profile-body">
-                <label>О себе:</label>
-                <p id="modal-bio" class="bio-text">Описание отсутствует...</p>
+            <!-- Блок для просмотра О Себе -->
+            <div class="bio-container">
+                <label class="field-label">О себе:</label>
+                <p id="modal-bio" class="bio-text">Пользователь пока ничего не указал.</p>
+            </div>
 
-                <!-- Блок редактирования (для своего профиля) -->
-                <div id="edit-profile-section" class="edit-section hidden">
-                    <div class="input-group">
-                        <label>Ссылка на фото профиля (URL):</label>
-                        <input type="text" id="edit-avatar-url" placeholder="https://example.com/photo.jpg">
-                    </div>
-                    <div class="input-group">
-                        <label>Статус / О себе:</label>
-                        <textarea id="edit-bio" placeholder="Расскажите о себе..."></textarea>
-                    </div>
-                    <button id="save-profile-btn" class="btn btn-primary">Сохранить</button>
+            <!-- БЛОК 1: Тлько для РЕДАКТИРОВАНИЯ своего профиля -->
+            <div id="edit-profile-block" class="modal-section hidden">
+                <div class="input-field">
+                    <label>Ссылка на аватарку (URL)</label>
+                    <input type="text" id="edit-avatar-url" placeholder="https://site.com/avatar.jpg">
                 </div>
+                <div class="input-field">
+                    <label>Статус / О себе</label>
+                    <textarea id="edit-bio" placeholder="Напишите пару слов о себе..."></textarea>
+                </div>
+                <button id="save-profile-btn" class="btn btn-primary full-width">Сохранить изменения</button>
+            </div>
 
-                <!-- Кнопка для лички (для чужого профиля) -->
-                <button id="start-private-btn" class="btn btn-primary hidden">💬 Написать личное сообщение</button>
+            <!-- БЛОК 2: Только для НАЧАЛА ЛИЧКИ с чужим профилем -->
+            <div id="action-profile-block" class="modal-section hidden">
+                <button id="start-private-btn" class="btn btn-primary full-width">💬 Написать личное сообщение</button>
             </div>
         </div>
     </div>
