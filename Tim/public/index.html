@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <!-- Viewport для корректной работы на мобильных устройствах -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Общий Web-Мессенджер</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="app-container">
+
+        <!-- ========================================== -->
+        <!-- 1. ЭКРАН АВТОРИЗАЦИИ И РЕГИСТРАЦИИ        -->
+        <!-- ========================================== -->
+        <div id="auth-screen" class="card">
+            <h2 id="auth-title">Вход в чат</h2>
+            
+            <form id="auth-form">
+                <!-- Поле Никнейма (показывается только при регистрации) -->
+                <div class="input-group hidden" id="nickname-group">
+                    <label for="nickname">Никнейм:</label>
+                    <input type="text" id="nickname" placeholder="Придумайте никнейм" autocomplete="off">
+                </div>
+
+                <div class="input-group">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" placeholder="example@mail.com" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="password">Пароль:</label>
+                    <input type="password" id="password" placeholder="••••••••" required>
+                </div>
+
+                <!-- Сообщение об ошибке -->
+                <div id="auth-error" class="error-message hidden"></div>
+
+                <button type="submit" id="auth-btn" class="btn btn-primary">Войти</button>
+            </form>
+
+            <!-- Переключатель Вход / Регистрация -->
+            <div class="auth-toggle">
+                <span id="toggle-text">Ещё нет аккаунта?</span>
+                <button type="button" id="toggle-btn" class="btn-link">Зарегистрироваться</button>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- 2. ЭКРАН ГИГАЧАТА (по умолчанию скрыт)     -->
+        <!-- ========================================== -->
+        <div id="chat-screen" class="chat-container hidden">
+            <!-- Шапка чата -->
+            <header class="chat-header">
+                <div class="user-info">
+                    <span class="avatar" id="user-avatar">U</span>
+                    <div>
+                        <h3 id="user-nickname">Пользователь</h3>
+                        <span class="status-online">● онлайн в общем чате</span>
+                    </div>
+                </div>
+                <button id="logout-btn" class="btn btn-secondary">Выйти</button>
+            </header>
+
+            <!-- Окно истории сообщений -->
+            <div id="messages-container" class="messages-container">
+                <!-- Сообщения будут динамически добавляться через JS -->
+            </div>
+
+            <!-- Форма отправки сообщения -->
+                <form id="message-form" class="message-form">
+                <input 
+                    type="text" 
+                    id="message-input" 
+                    placeholder="Напишите сообщение..." 
+                    autocomplete="off" 
+                    required
+                >
+                <button type="submit" class="btn btn-primary">
+                    <!-- Иконка отправки (Самолетик) -->
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                </button>
+            </form>
+        </div>
+
+    </div>
+
+    <!-- Клиентский скрипт Socket.io (автоматически отдается сервером Socket.io) -->
+    <script src="/socket.io/socket.io.js"></script>
+    <!-- Наш главный клиентский JS файл -->
+    <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,301 @@
+/* Переменные для удобного изменения темы */
+:root {
+    --bg-color: #0f172a;
+    --card-bg: #1e293b;
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --accent-color: #3b82f6;
+    --accent-hover: #2563eb;
+    --danger-color: #ef4444;
+    --message-my-bg: #2563eb;
+    --message-other-bg: #334155;
+    --border-color: #334155;
+    --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    font-family: var(--font-family);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* dvh подстраивается под экраны мобилок с учетом виртуальной клавиатуры */
+    height: 100dvh;
+    overflow: hidden;
+}
+
+.app-container {
+    width: 100%;
+    max-width: 800px;
+    height: 100dvh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+}
+
+/* Вспомогательный класс для скрытия элементов */
+.hidden {
+    display: none !important;
+}
+
+/* ---------------------------------------------------- */
+/* КАРТОЧКА АВТОРИЗАЦИИ / РЕГИСТРАЦИИ                    */
+/* ---------------------------------------------------- */
+.card {
+    background-color: var(--card-bg);
+    width: 100%;
+    max-width: 400px;
+    padding: 30px;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border-color);
+}
+
+.card h2 {
+    margin-bottom: 24px;
+    text-align: center;
+    font-size: 1.5rem;
+}
+
+.input-group {
+    margin-bottom: 16px;
+    display: flex;
+    flex-direction: column;
+}
+
+.input-group label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+}
+
+.input-group input {
+    padding: 12px;
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.input-group input:focus {
+    border-color: var(--accent-color);
+}
+
+.error-message {
+    color: var(--danger-color);
+    font-size: 0.85rem;
+    margin-bottom: 12px;
+    text-align: center;
+}
+
+/* Кнопки */
+.btn {
+    padding: 12px 20px;
+    border-radius: 8px;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-primary {
+    background-color: var(--accent-color);
+    color: white;
+    width: 100%;
+}
+
+.btn-primary:hover {
+    background-color: var(--accent-hover);
+}
+
+.btn-secondary {
+    background-color: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+    color: var(--text-primary);
+    border-color: var(--text-primary);
+}
+
+.auth-toggle {
+    margin-top: 20px;
+    text-align: center;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.btn-link {
+    background: none;
+    border: none;
+    color: var(--accent-color);
+    cursor: pointer;
+    font-weight: 600;
+    margin-left: 5px;
+}
+
+/* ---------------------------------------------------- */
+/* ИНТЕРФЕЙС ГИГАЧАТА                                   */
+/* ---------------------------------------------------- */
+.chat-container {
+    width: 100%;
+    height: 100%;
+    max-height: 900px;
+    background-color: var(--card-bg);
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+}
+
+/* Шапка чата */
+.chat-header {
+    padding: 16px 20px;
+    background-color: #1e293b;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: var(--accent-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: white;
+}
+
+.status-online {
+    font-size: 0.75rem;
+    color: #10b981;
+}
+
+/* Окно сообщений */
+.messages-container {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Стили пузырьков сообщений */
+.message {
+    max-width: 75%;
+    padding: 10px 14px;
+    border-radius: 12px;
+    word-break: break-word;
+    font-size: 0.95rem;
+    line-height: 1.4;
+}
+
+.message .author {
+    font-size: 0.75rem;
+    font-weight: bold;
+    margin-bottom: 4px;
+    opacity: 0.8;
+}
+
+.message .time {
+    font-size: 0.65rem;
+    opacity: 0.6;
+    margin-top: 4px;
+    text-align: right;
+}
+
+/* Свои сообщения справа */
+.message.my-message {
+    align-self: flex-end;
+    background-color: var(--message-my-bg);
+    color: white;
+    border-bottom-right-radius: 2px;
+}
+
+/* Чужие сообщения слева */
+.message.other-message {
+    align-self: flex-start;
+    background-color: var(--message-other-bg);
+    color: var(--text-primary);
+    border-bottom-left-radius: 2px;
+}
+
+/* Сообщения системы (вход/выход) */
+.message.system-message {
+    align-self: center;
+    background-color: transparent;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    font-style: italic;
+    padding: 4px 8px;
+}
+
+/* Форма отправки сообщения */
+.message-form {
+    padding: 16px;
+    display: flex;
+    gap: 10px;
+    background-color: var(--card-bg);
+    border-top: 1px solid var(--border-color);
+}
+
+.message-form input {
+    flex: 1;
+    padding: 12px 16px;
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 24px;
+    color: var(--text-primary);
+    outline: none;
+    font-size: 1rem;
+}
+
+.message-form input:focus {
+    border-color: var(--accent-color);
+}
+
+.message-form button {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+/* Адаптивность для смартфонов */
+@media (max-width: 600px) {
+    .app-container {
+        padding: 0;
+    }
+    .chat-container {
+        border-radius: 0;
+        border: none;
+    }
+}
