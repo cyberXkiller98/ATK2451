@@ -35,7 +35,6 @@ body {
     border-radius: 6px;
     font-size: 0.72rem;
     font-weight: 700;
-    letter-spacing: 0.5px;
     display: inline-block;
 }
 
@@ -65,7 +64,7 @@ body {
 .feature-card h3 { margin-bottom: 8px; font-size: 1.1rem; }
 .feature-card p { font-size: 0.9rem; color: var(--text-muted); }
 
-/* МОДАЛКА АВТОРИЗАЦИИ */
+/* МОДАЛКА */
 .modal-backdrop {
     position: fixed; inset: 0;
     background: rgba(0, 0, 0, 0.8);
@@ -120,14 +119,12 @@ body {
 
 .btn-icon { background: none; border: none; color: var(--text-muted); font-size: 1.2rem; cursor: pointer; padding: 6px; }
 
-/* ПОИСК */
 .search-box { padding: 12px; position: relative; }
 .search-box input { width: 100%; padding: 10px 14px; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 20px; color: var(--text-main); font-size: 0.85rem; outline: none; }
 .search-results { position: absolute; top: 100%; left: 12px; right: 12px; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 12px; max-height: 200px; overflow-y: auto; z-index: 100; }
 .search-item { padding: 10px; display: flex; align-items: center; gap: 10px; cursor: pointer; }
 .search-item:hover { background: rgba(255,255,255,0.05); }
 
-/* СПИСОК ЧАТОВ */
 .chat-sections { flex: 1; overflow-y: auto; padding: 8px 12px; }
 .section-label { font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin: 12px 6px 6px; }
 
@@ -143,7 +140,6 @@ body {
 .card-time { font-size: 0.75rem; opacity: 0.7; }
 .card-preview { font-size: 0.8rem; opacity: 0.8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
 
-/* ЧАТ */
 .chat-workspace { flex: 1; display: flex; flex-direction: column; background: var(--bg-app); }
 .workspace-header { padding: 14px 20px; background: var(--bg-panel); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 12px; }
 .active-chat-info { display: flex; align-items: center; gap: 12px; cursor: pointer; }
@@ -152,23 +148,19 @@ body {
 
 .messages-scroll-area { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
 
-/* СООБЩЕНИЯ */
 .msg-bubble { max-width: 65%; padding: 10px 14px; border-radius: 14px; font-size: 0.95rem; line-height: 1.4; word-break: break-word; }
 .msg-bubble.my { align-self: flex-end; background: var(--msg-my-bg); color: white; border-bottom-right-radius: 2px; }
 .msg-bubble.other { align-self: flex-start; background: var(--msg-other-bg); color: var(--text-main); border-bottom-left-radius: 2px; }
 
-.msg-author-header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; cursor: pointer; }
+.msg-author-header { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; cursor: pointer; }
 .msg-author-name { font-size: 0.78rem; font-weight: 700; color: var(--accent-color); }
 .msg-time { font-size: 0.65rem; opacity: 0.6; float: right; margin-left: 10px; margin-top: 4px; }
 .msg-img { max-width: 100%; max-height: 250px; border-radius: 8px; margin-top: 6px; cursor: pointer; }
 
-/* АУДИО ПЛЕЕР */
 .voice-player { display: flex; align-items: center; gap: 10px; margin-top: 4px; }
 .voice-play-btn { width: 32px; height: 32px; border-radius: 50%; border: none; background: #fff; color: #000; cursor: pointer; font-size: 0.8rem; }
 
-/* ВВОД */
 .workspace-footer { padding: 12px 20px; background: var(--bg-panel); border-top: 1px solid var(--border-color); position: relative; }
-.typing-indicator { position: absolute; top: -20px; left: 20px; font-size: 0.75rem; color: var(--accent-color); font-style: italic; }
 
 .send-form { display: flex; align-items: center; gap: 10px; }
 .attach-btn { font-size: 1.3rem; cursor: pointer; padding: 6px; background: none; border: none; color: var(--text-muted); }
@@ -179,7 +171,8 @@ body {
 .send-form input[type="text"] { flex: 1; padding: 12px 16px; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 24px; color: var(--text-main); outline: none; }
 .btn-send { border-radius: 50%; width: 42px; height: 42px; padding: 0; display: flex; align-items: center; justify-content: center; }
 
-/* МОДАЛКА */
+.image-preview-bar { margin-top: 8px; font-size: 0.8rem; color: var(--accent-color); display: flex; justify-content: space-between; align-items: center; }
+
 .modal-window { background: var(--bg-panel); border: 1px solid var(--border-color); padding: 28px; border-radius: 20px; width: 90%; max-width: 380px; position: relative; }
 .modal-close-btn { position: absolute; top: 14px; right: 14px; background: none; border: none; color: var(--text-muted); font-size: 1.1rem; cursor: pointer; }
 .profile-summary { display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 16px; }
@@ -189,6 +182,8 @@ body {
 .bio-container { background: var(--bg-input); padding: 12px; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 16px; }
 .field-label { font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 4px; }
 .bio-text { font-size: 0.9rem; }
+
+.modal-section { margin-top: 16px; }
 
 .mobile-only { display: none; }
 @media (max-width: 768px) {
