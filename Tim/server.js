@@ -13,12 +13,11 @@ const io = new Server(server);
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 
-// Увеличенный лимит для аудио и картинок (15MB)
-app.use(express.json({ limit: '15mb' }));
-app.use(express.urlencoded({ limit: '15mb', extended: true }));
+app.use(express.json({ limit: '20mb' }));
+app.use(express.urlencoded({ limit: '20mb', extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Антиспам (1.5 сек между сообщениями)
+// Антиспам (задержка 1.5 секунды)
 const lastMessageTimes = new Map();
 function isSpamming(userId) {
     const now = Date.now();
@@ -28,23 +27,18 @@ function isSpamming(userId) {
     return false;
 }
 
-// Отслеживание онлайна (userId -> socketId)
 const onlineUsers = new Map();
 
 // ====================================================
 // REST API
 // ====================================================
 
-// Регистрация с уникальным тэгом
 app.post('/api/register', async (req, res) => {
-    const { email, nickname, password, tag } = req.body;
+    const { email, nickname, password } = req.body;
 
     if (!email || !nickname || !password) {
-        return res.status(400).json({ error: 'Заполните обязательные поля!' });
+        return res.status(400).json({ error: 'Заполните все обязательные поля!' });
     }
-
-    // Формируем тег пользователя
-    const userTag = tag ? tag.replace('@', '').toLowerCase().trim() : `user_${Math.floor(1000 + Math.random() * 9000)}`;
 
     try {
         const { data: existingUser } = await supabase
@@ -61,7 +55,7 @@ app.post('/api/register', async (req, res) => {
 
         const { error } = await supabase
             .from('users')
-            .insert([{ email, nickname, tag: userTag, password_hash: passwordHash }]);
+            .insert([{ email, nickname, password_hash: passwordHash }]);
 
         if (error) throw error;
 
@@ -73,7 +67,6 @@ app.post('/api/register', async (req, res) => {
     }
 });
 
-// Вход
 app.post('/api/login', async (req, res) => {
     const { email, password } = req.body;
 
@@ -84,7 +77,7 @@ app.post('/api/login', async (req, res) => {
     try {
         const { data: user, error } = await supabase
             .from('users')
-            .select('id, email, nickname, tag, password_hash, created_at, avatar_url, bio')
+            .select('id, email, nickname, password_hash, created_at, avatar_url, bio')
             .eq('email', email)
             .maybeSingle();
 
@@ -99,10 +92,9 @@ app.post('/api/login', async (req, res) => {
 
         return res.json({
             user: {
-                id: user.id,
+                id: user.id, // Гарантированный уникальный ID из базы
                 email: user.email,
                 nickname: user.nickname,
-                tag: user.tag || `user_${user.id}`,
                 created_at: user.created_at,
                 avatar_url: user.avatar_url || '',
                 bio: user.bio || ''
@@ -115,37 +107,38 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// Поиск пользователя по Tag или Никнейму
+// Поиск по ID или Никнейму
 app.get('/api/users/search', async (req, res) => {
     const query = req.query.q?.trim().toLowerCase();
     if (!query) return res.json({ users: [] });
 
     try {
-        const { data: users, error } = await supabase
+        let queryBuilder = supabase
             .from('users')
-            .select('id, nickname, tag, avatar_url, bio')
-            .or(`nickname.ilike.%${query}%,tag.ilike.%${query}%`)
-            .limit(10);
+            .select('id, nickname, avatar_url, bio');
 
-        if (error) throw error;
+        if (!isNaN(query)) {
+            queryBuilder = queryBuilder.eq('id', Number(query));
+        } else {
+            queryBuilder = queryBuilder.ilike('nickname', `%${query}%`);
+        }
+
+        const { data: users } = await queryBuilder.limit(10);
         return res.json({ users: users || [] });
     } catch (err) {
         return res.status(500).json({ error: 'Ошибка поиска' });
     }
 });
 
-// Получение профиля
 app.get('/api/user/:id', async (req, res) => {
     try {
         const { data: user, error } = await supabase
             .from('users')
-            .select('id, nickname, tag, avatar_url, bio, created_at')
+            .select('id, nickname, avatar_url, bio, created_at')
             .eq('id', req.params.id)
             .maybeSingle();
 
         if (error || !user) return res.status(404).json({ error: 'Пользователь не найден' });
-        
-        // Добавляем статус онлайн
         user.is_online = onlineUsers.has(String(user.id));
         return res.json({ user });
     } catch (err) {
@@ -153,20 +146,14 @@ app.get('/api/user/:id', async (req, res) => {
     }
 });
 
-// Обновление профиля
 app.post('/api/user/update-profile', async (req, res) => {
-    const { userId, avatarUrl, bio, tag } = req.body;
+    const { userId, avatarUrl, bio } = req.body;
     if (!userId) return res.status(400).json({ error: 'Нет ID' });
 
-    const cleanTag = tag ? tag.replace('@', '').toLowerCase().trim() : null;
-
     try {
-        const updateData = { avatar_url: avatarUrl, bio: bio };
-        if (cleanTag) updateData.tag = cleanTag;
-
         const { error } = await supabase
             .from('users')
-            .update(updateData)
+            .update({ avatar_url: avatarUrl, bio: bio })
             .eq('id', userId);
 
         if (error) throw error;
@@ -177,25 +164,20 @@ app.post('/api/user/update-profile', async (req, res) => {
 });
 
 // ====================================================
-// SOCKET.IO (ЧАТ В РЕАЛЬНОМ ВРЕМЕНИ)
+// SOCKET.IO REALTIME
 // ====================================================
 
 io.on('connection', (socket) => {
-    let currentSocketUserId = null;
+    let currentUserId = null;
 
-    // Авторизация сокета и статус онлайн
     socket.on('join-user-room', (userId) => {
         if (!userId) return;
-        currentSocketUserId = String(userId);
-        
+        currentUserId = String(userId);
         socket.join(`user_${userId}`);
-        onlineUsers.set(currentSocketUserId, socket.id);
-
-        // Рассылаем всем статус «онлайн»
-        io.emit('user-status-changed', { userId: currentSocketUserId, isOnline: true });
+        onlineUsers.set(currentUserId, socket.id);
+        io.emit('user-status-changed', { userId: currentUserId, isOnline: true });
     });
 
-    // История общего чата
     socket.on('get-history', async (data) => {
         try {
             let query = supabase
@@ -215,7 +197,6 @@ io.on('connection', (socket) => {
         }
     });
 
-    // Отправка сообщения в общий чат (текст, картинка, голосовое)
     socket.on('send-message', async (data) => {
         const { userId, nickname, text, imageUrl, voiceUrl } = data;
         if (!userId || (!text && !imageUrl && !voiceUrl)) return;
@@ -245,7 +226,6 @@ io.on('connection', (socket) => {
         }
     });
 
-    // История лички
     socket.on('get-private-history', async (data) => {
         const { myId, otherId } = data;
         if (!myId || !otherId) return;
@@ -264,7 +244,6 @@ io.on('connection', (socket) => {
         }
     });
 
-    // Отправка личного сообщения
     socket.on('send-private-message', async (data) => {
         const { senderId, receiverId, senderNickname, text, imageUrl, voiceUrl } = data;
         if (!senderId || !receiverId || (!text && !imageUrl && !voiceUrl)) return;
@@ -297,17 +276,16 @@ io.on('connection', (socket) => {
         }
     });
 
-    // Индикатор "Печатает..."
     socket.on('typing-start', (data) => {
         if (data.receiverId) {
-            io.to(`user_${data.receiverId}`).emit('user-typing', { senderId: data.senderId, nickname: data.nickname });
+            io.to(`user_${data.receiverId}`).emit('user-typing', { senderId: data.senderId });
         }
     });
 
     socket.on('disconnect', () => {
-        if (currentSocketUserId) {
-            onlineUsers.delete(currentSocketUserId);
-            io.emit('user-status-changed', { userId: currentSocketUserId, isOnline: false });
+        if (currentUserId) {
+            onlineUsers.delete(currentUserId);
+            io.emit('user-status-changed', { userId: currentUserId, isOnline: false });
         }
     });
 });
