@@ -13,11 +13,11 @@ const io = new Server(server);
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 
-app.use(express.json({ limit: '20mb' }));
-app.use(express.urlencoded({ limit: '20mb', extended: true }));
+app.use(express.json({ limit: '15mb' }));
+app.use(express.urlencoded({ limit: '15mb', extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Антиспам (задержка 1.5 секунды)
+// Антиспам (1.5 сек)
 const lastMessageTimes = new Map();
 function isSpamming(userId) {
     const now = Date.now();
@@ -37,7 +37,7 @@ app.post('/api/register', async (req, res) => {
     const { email, nickname, password } = req.body;
 
     if (!email || !nickname || !password) {
-        return res.status(400).json({ error: 'Заполните все обязательные поля!' });
+        return res.status(400).json({ error: 'Заполните все поля!' });
     }
 
     try {
@@ -59,7 +59,7 @@ app.post('/api/register', async (req, res) => {
 
         if (error) throw error;
 
-        return res.json({ success: true, message: 'Регистрация успешна!' });
+        return res.json({ success: true });
 
     } catch (err) {
         console.error('Ошибка регистрации:', err);
@@ -92,7 +92,7 @@ app.post('/api/login', async (req, res) => {
 
         return res.json({
             user: {
-                id: user.id, // Гарантированный уникальный ID из базы
+                id: user.id, // Гарантированный цифровой ID
                 email: user.email,
                 nickname: user.nickname,
                 created_at: user.created_at,
@@ -107,18 +107,17 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// Поиск по ID или Никнейму
+// Поиск по цифровому ID или никнейму
 app.get('/api/users/search', async (req, res) => {
     const query = req.query.q?.trim().toLowerCase();
     if (!query) return res.json({ users: [] });
 
     try {
-        let queryBuilder = supabase
-            .from('users')
-            .select('id, nickname, avatar_url, bio');
+        let queryBuilder = supabase.from('users').select('id, nickname, avatar_url, bio');
 
-        if (!isNaN(query)) {
-            queryBuilder = queryBuilder.eq('id', Number(query));
+        const cleanId = query.replace('#', '');
+        if (!isNaN(cleanId) && cleanId !== '') {
+            queryBuilder = queryBuilder.eq('id', Number(cleanId));
         } else {
             queryBuilder = queryBuilder.ilike('nickname', `%${query}%`);
         }
@@ -164,7 +163,7 @@ app.post('/api/user/update-profile', async (req, res) => {
 });
 
 // ====================================================
-// SOCKET.IO REALTIME
+// REALTIME SOCKETS
 // ====================================================
 
 io.on('connection', (socket) => {
@@ -222,7 +221,7 @@ io.on('connection', (socket) => {
             io.emit('new-message', newMessage);
 
         } catch (err) {
-            console.error('Ошибка отправки сообщения:', err);
+            console.error('Ошибка отправки:', err);
         }
     });
 
@@ -276,12 +275,6 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on('typing-start', (data) => {
-        if (data.receiverId) {
-            io.to(`user_${data.receiverId}`).emit('user-typing', { senderId: data.senderId });
-        }
-    });
-
     socket.on('disconnect', () => {
         if (currentUserId) {
             onlineUsers.delete(currentUserId);
@@ -291,6 +284,4 @@ io.on('connection', (socket) => {
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-    console.log(`🚀 Сервер запущен на порту ${PORT}`);
-});
+server.listen(PORT, () => console.log(`🚀 Сервер запущен на порту ${PORT}`));
