@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Obsidian Messenger</title>
+    <title>Obsidian Web Messenger</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <!-- ПРИВЕТСТВЕННАЯ СТРАНИЦА (LANDING) -->
+    <!-- LANDING PAGE -->
     <div id="landing-screen" class="landing-container">
         <header class="landing-header">
             <div class="brand">⚡ OBSIDIAN</div>
@@ -16,9 +16,9 @@
         </header>
 
         <main class="landing-hero">
-            <div class="hero-badge">🛡️ Верифицированная защита с уникальным #ID</div>
-            <h1>Безопасный веб-мессенджер реального времени</h1>
-            <p>Общайтесь в общем чате, переходите в личные диалоги, отправляйте голосовые и сжатые фото без лагов и подделки личности.</p>
+            <div class="hero-badge">🛡️ Верификация пользователей с уникальным #ID</div>
+            <h1>Анонимный веб-мессенджер без фейков и лагов</h1>
+            <p>Общайтесь в общем чате, переходите в личные диалоги, отправляйте сжатые фото и голосовые сообщения с верификацией каждого профиля.</p>
             
             <div class="hero-actions">
                 <button id="open-app-btn" class="btn btn-primary btn-lg">Открыть Web App 🚀</button>
@@ -28,23 +28,23 @@
                 <div class="feature-card">
                     <div class="feature-icon">🆔</div>
                     <h3>Уникальный #ID</h3>
-                    <p>Каждый аккаунт привязан к цифровому ID. Никто не сможет выдать себя за вас.</p>
+                    <p>Никто не сможет выдать себя за вас — подлинность подтверждает цифровой номер базы данных.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">⚡</div>
-                    <h3>Мгновенные фото</h3>
-                    <p>Автоматическое сжатие изображений перед отправкой — никаких тормозов.</p>
+                    <h3>Мгновенная скорость</h3>
+                    <p>Автоматическое сжатие изображений перед отправкой устраняет любые задержки.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">🎙️</div>
                     <h3>Голосовые сообщения</h3>
-                    <p>Запись аудио с микрофона прямо из браузера в один клик.</p>
+                    <p>Удобная запись аудио с микрофона прямо в окне чата.</p>
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- МОДАЛЬНОЕ ОКНО АВТОРИЗАЦИИ -->
+    <!-- МОДАЛКА АВТОРИЗАЦИИ -->
     <div id="auth-modal" class="modal-backdrop hidden">
         <div class="auth-card">
             <button id="close-auth-modal" class="modal-close">✖</button>
@@ -52,7 +52,7 @@
             
             <form id="auth-form">
                 <div class="input-field hidden" id="nickname-group">
-                    <label>Никнейм</label>
+                    <label>Ваш Никнейм</label>
                     <input type="text" id="nickname" placeholder="Например: Alex" autocomplete="off">
                 </div>
 
@@ -78,10 +78,9 @@
         </div>
     </div>
 
-    <!-- ГЛАВНЫЙ ИНТЕРФЕЙС ПРИЛОЖЕНИЯ -->
+    <!-- МЕССЕНДЖЕР -->
     <div id="app-screen" class="app-layout hidden">
 
-        <!-- СИДЕБАР -->
         <aside class="sidebar">
             <div class="user-bar">
                 <div class="user-preview" id="my-profile-trigger">
@@ -98,7 +97,7 @@
             </div>
 
             <div class="search-box">
-                <input type="text" id="search-input" placeholder="🔍 Поиск по ID или Никнейму...">
+                <input type="text" id="search-input" placeholder="🔍 Поиск по #ID или Имени...">
                 <div id="search-results" class="search-results hidden"></div>
             </div>
 
@@ -120,7 +119,6 @@
             </div>
         </aside>
 
-        <!-- ЧАТ РАБОЧАЯ ОБЛАСТЬ -->
         <main class="chat-workspace">
             <header class="workspace-header">
                 <button id="back-to-sidebar-btn" class="btn-icon mobile-only">←</button>
@@ -139,8 +137,6 @@
             <div id="messages-container" class="messages-scroll-area"></div>
 
             <footer class="workspace-footer">
-                <div id="typing-indicator" class="typing-indicator hidden">собеседник печатает...</div>
-                
                 <form id="message-form" class="send-form">
                     <label for="image-input" class="attach-btn" title="Прикрепить фото">📷</label>
                     <input type="file" id="image-input" accept="image/*" hidden>
@@ -153,14 +149,14 @@
                 </form>
 
                 <div id="image-preview-bar" class="image-preview-bar hidden">
-                    <span>🖼️ Фотография сжата и готова</span>
+                    <span>🖼️ Фото сжато и готово</span>
                     <button id="remove-image-btn" type="button">✖</button>
                 </div>
             </footer>
         </main>
     </div>
 
-    <!-- МОДАЛЬНОЕ ОКНО ПРОФИЛЯ -->
+    <!-- МОДАЛКА ПРОФИЛЯ -->
     <div id="profile-modal" class="modal-backdrop hidden">
         <div class="modal-window">
             <button class="modal-close-btn" id="close-modal-btn">✖</button>
@@ -179,7 +175,6 @@
                 <p id="modal-bio" class="bio-text">Пользователь пока ничего не указал.</p>
             </div>
 
-            <!-- ДЛЯ СВОЕГО ПРОФИЛЯ -->
             <div id="edit-profile-block" class="modal-section hidden">
                 <div class="input-field">
                     <label>Ссылка на фото профиля (URL)</label>
@@ -192,7 +187,6 @@
                 <button id="save-profile-btn" class="btn btn-primary full-width">Сохранить изменения</button>
             </div>
 
-            <!-- ДЛЯ ЧУЖОГО ПРОФИЛЯ -->
             <div id="action-profile-block" class="modal-section hidden">
                 <button id="start-private-btn" class="btn btn-primary full-width">💬 Написать личное сообщение</button>
             </div>
