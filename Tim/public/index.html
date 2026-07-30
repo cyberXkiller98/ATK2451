@@ -3,22 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Obsidian Web Messenger</title>
+    <title>Obsidian Messenger</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <!-- 1. ПРИВЕТСТВЕННЫЙ ЭКРАН (LANDING PAGE) -->
+    <!-- ПРИВЕТСТВЕННАЯ СТРАНИЦА (LANDING) -->
     <div id="landing-screen" class="landing-container">
         <header class="landing-header">
-            <div class="brand">⚡ Obsidian Web</div>
+            <div class="brand">⚡ OBSIDIAN</div>
             <button id="landing-login-btn" class="btn btn-outline">Войти</button>
         </header>
 
         <main class="landing-hero">
-            <div class="hero-badge">✨ Новое поколение реального времени</div>
-            <h1>Анонимный веб-мессенджер без границ</h1>
-            <p>Общайтесь в общем гигачате, заводите личные диалоги, отправляйте голосовые сообщения и делитесь фото с абсолютной защитой данных.</p>
+            <div class="hero-badge">🛡️ Верифицированная защита с уникальным #ID</div>
+            <h1>Безопасный веб-мессенджер реального времени</h1>
+            <p>Общайтесь в общем чате, переходите в личные диалоги, отправляйте голосовые и сжатые фото без лагов и подделки личности.</p>
             
             <div class="hero-actions">
                 <button id="open-app-btn" class="btn btn-primary btn-lg">Открыть Web App 🚀</button>
@@ -26,39 +26,34 @@
 
             <div class="features-grid">
                 <div class="feature-card">
+                    <div class="feature-icon">🆔</div>
+                    <h3>Уникальный #ID</h3>
+                    <p>Каждый аккаунт привязан к цифровому ID. Никто не сможет выдать себя за вас.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Мгновенные фото</h3>
+                    <p>Автоматическое сжатие изображений перед отправкой — никаких тормозов.</p>
+                </div>
+                <div class="feature-card">
                     <div class="feature-icon">🎙️</div>
                     <h3>Голосовые сообщения</h3>
-                    <p>Записывайте звук прямо в браузере с быстрым встроенным плеером.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🆔</div>
-                    <h3>Уникальный Tag ID</h3>
-                    <p>Каждый пользователь получает личный `@tag` для удобного поиска.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🔒</div>
-                    <h3>Шифрование Паролей</h3>
-                    <p>Надежное хеширование bcrypt на стороне сервера Node.js.</p>
+                    <p>Запись аудио с микрофона прямо из браузера в один клик.</p>
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- 2. МОДАЛЬНОЕ ОКНО АВТОРИЗАЦИИ -->
+    <!-- МОДАЛЬНОЕ ОКНО АВТОРИЗАЦИИ -->
     <div id="auth-modal" class="modal-backdrop hidden">
         <div class="auth-card">
             <button id="close-auth-modal" class="modal-close">✖</button>
-            <h2 id="auth-title">Вход в мессенджер</h2>
+            <h2 id="auth-title">Вход в систему</h2>
             
             <form id="auth-form">
                 <div class="input-field hidden" id="nickname-group">
                     <label>Никнейм</label>
                     <input type="text" id="nickname" placeholder="Например: Alex" autocomplete="off">
-                </div>
-
-                <div class="input-field hidden" id="tag-group">
-                    <label>Уникальный Tag ID (без @)</label>
-                    <input type="text" id="tag" placeholder="alex_dev" autocomplete="off">
                 </div>
 
                 <div class="input-field">
@@ -83,7 +78,7 @@
         </div>
     </div>
 
-    <!-- 3. ГЛАВНЫЙ ИНТЕРФЕЙС ПРИЛОЖЕНИЯ -->
+    <!-- ГЛАВНЫЙ ИНТЕРФЕЙС ПРИЛОЖЕНИЯ -->
     <div id="app-screen" class="app-layout hidden">
 
         <!-- СИДЕБАР -->
@@ -92,22 +87,23 @@
                 <div class="user-preview" id="my-profile-trigger">
                     <div class="avatar" id="my-avatar">U</div>
                     <div class="user-meta">
-                        <span id="my-nickname" class="nickname">Пользователь</span>
-                        <span id="my-tag" class="tag-label">@tag</span>
+                        <div class="nickname-row">
+                            <span id="my-nickname" class="nickname">Пользователь</span>
+                            <span id="my-id-badge" class="uid-badge">#0000</span>
+                        </div>
+                        <span class="status-online">● онлайн</span>
                     </div>
                 </div>
                 <button id="logout-btn" class="btn-icon" title="Выйти">🚪</button>
             </div>
 
-            <!-- ПОИСК ПОЛЬЗОВАТЕЛЕЙ ПО ТЭГУ -->
             <div class="search-box">
-                <input type="text" id="search-input" placeholder="🔍 Поиск по @tag или имени...">
+                <input type="text" id="search-input" placeholder="🔍 Поиск по ID или Никнейму...">
                 <div id="search-results" class="search-results hidden"></div>
             </div>
 
-            <!-- СПИСОК ЧАТОВ -->
             <div class="chat-sections">
-                <div class="section-label">Главный канал</div>
+                <div class="section-label">Главный Канал</div>
                 <div class="chat-card active" id="global-chat-card">
                     <div class="card-icon">🌐</div>
                     <div class="card-info">
@@ -119,7 +115,7 @@
                     </div>
                 </div>
 
-                <div class="section-label">Личные диалоги</div>
+                <div class="section-label">Личные сообщения</div>
                 <div class="direct-chats-list" id="direct-chats-list"></div>
             </div>
         </aside>
@@ -131,7 +127,10 @@
                 <div class="active-chat-info" id="active-chat-info">
                     <div class="avatar" id="header-avatar">🌐</div>
                     <div>
-                        <h3 id="header-title">Общий чат</h3>
+                        <div class="title-row">
+                            <h3 id="header-title">Общий чат</h3>
+                            <span id="header-uid-badge" class="uid-badge hidden">#0000</span>
+                        </div>
                         <span id="header-subtitle" class="subtitle">Публичная комната</span>
                     </div>
                 </div>
@@ -139,7 +138,6 @@
 
             <div id="messages-container" class="messages-scroll-area"></div>
 
-            <!-- ПОДВАЛ ВВОДА СООБЩЕНИЯ -->
             <footer class="workspace-footer">
                 <div id="typing-indicator" class="typing-indicator hidden">собеседник печатает...</div>
                 
@@ -147,7 +145,6 @@
                     <label for="image-input" class="attach-btn" title="Прикрепить фото">📷</label>
                     <input type="file" id="image-input" accept="image/*" hidden>
 
-                    <!-- КНОПКА ЗАПИСИ ГОЛОСОВОГО -->
                     <button type="button" id="voice-rec-btn" class="attach-btn" title="Записать голосовое">🎤</button>
 
                     <input type="text" id="message-input" placeholder="Напишите сообщение..." autocomplete="off">
@@ -156,45 +153,43 @@
                 </form>
 
                 <div id="image-preview-bar" class="image-preview-bar hidden">
-                    <span>🖼️ Фотография готова</span>
+                    <span>🖼️ Фотография сжата и готова</span>
                     <button id="remove-image-btn" type="button">✖</button>
                 </div>
             </footer>
         </main>
     </div>
 
-    <!-- 4. МОДАЛЬНОЕ ОКНО ПРОФИЛЯ -->
+    <!-- МОДАЛЬНОЕ ОКНО ПРОФИЛЯ -->
     <div id="profile-modal" class="modal-backdrop hidden">
         <div class="modal-window">
             <button class="modal-close-btn" id="close-modal-btn">✖</button>
             
             <div class="profile-summary">
                 <div class="avatar-large" id="modal-avatar">U</div>
-                <h3 id="modal-nickname">Никнейм</h3>
-                <span id="modal-tag" class="modal-tag-badge">@tag</span>
+                <div class="modal-name-row">
+                    <h3 id="modal-nickname">Никнейм</h3>
+                    <span id="modal-uid-badge" class="uid-badge">#0000</span>
+                </div>
                 <span id="modal-date" class="register-date">Зарегистрирован: ...</span>
             </div>
 
             <div class="bio-container">
                 <label class="field-label">О себе:</label>
-                <p id="modal-bio" class="bio-text">Описание отсутствует.</p>
+                <p id="modal-bio" class="bio-text">Пользователь пока ничего не указал.</p>
             </div>
 
             <!-- ДЛЯ СВОЕГО ПРОФИЛЯ -->
             <div id="edit-profile-block" class="modal-section hidden">
                 <div class="input-field">
-                    <label>Ваш Уникальный Tag ID</label>
-                    <input type="text" id="edit-tag" placeholder="my_tag">
-                </div>
-                <div class="input-field">
                     <label>Ссылка на фото профиля (URL)</label>
-                    <input type="text" id="edit-avatar-url" placeholder="https://site.com/photo.jpg">
+                    <input type="text" id="edit-avatar-url" placeholder="https://site.com/avatar.jpg">
                 </div>
                 <div class="input-field">
-                    <label>О себе</label>
-                    <textarea id="edit-bio" placeholder="Расскажите о себе..."></textarea>
+                    <label>Статус / О себе</label>
+                    <textarea id="edit-bio" placeholder="Напишите пару слов о себе..."></textarea>
                 </div>
-                <button id="save-profile-btn" class="btn btn-primary full-width">Сохранить профиль</button>
+                <button id="save-profile-btn" class="btn btn-primary full-width">Сохранить изменения</button>
             </div>
 
             <!-- ДЛЯ ЧУЖОГО ПРОФИЛЯ -->
