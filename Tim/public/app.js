@@ -1,5 +1,5 @@
 // ====================================================
-// 1. БЛОКИРОВКА ПКМ И ГОРЯЧИХ КЛАВИШ (F12)
+// 1. БЛОКИРОВКА ПКМ И F12
 // ====================================================
 document.addEventListener('contextmenu', (e) => e.preventDefault());
 document.addEventListener('keydown', (e) => {
@@ -9,17 +9,16 @@ document.addEventListener('keydown', (e) => {
 });
 
 // ====================================================
-// 2. ИНИЦИАЛИЗАЦИЯ И СОСТОЯНИЕ
+// 2. ИНИЦИАЛИЗАЦИЯ И СТАТУС
 // ====================================================
 const socket = io();
 
 let currentUser = null;
 let isRegisterMode = false;
-let activeChat = { type: 'global', id: null, nickname: 'Общий Чат (Гигачат)' };
-let privateUsersMap = new Map(); // Храним загруженных пользователей
+let activeChat = { type: 'global', id: null, nickname: 'Общий чат' };
 let attachedImageBase64 = null;
 
-// DOM элементы
+// DOM ЭЛЕМЕНТЫ
 const authScreen = document.getElementById('auth-screen');
 const appScreen = document.getElementById('app-screen');
 const authForm = document.getElementById('auth-form');
@@ -35,26 +34,24 @@ const toggleText = document.getElementById('toggle-text');
 
 const myAvatar = document.getElementById('my-avatar');
 const myNickname = document.getElementById('my-nickname');
-const myProfileBtn = document.getElementById('my-profile-btn');
+const myProfileTrigger = document.getElementById('my-profile-trigger');
 const logoutBtn = document.getElementById('logout-btn');
 
-const chatsList = document.getElementById('chats-list');
-const chatItemGlobal = document.getElementById('chat-item-global');
-const privateChatsContainer = document.getElementById('private-chats-container');
+const globalChatCard = document.getElementById('global-chat-card');
+const directChatsList = document.getElementById('direct-chats-list');
 
-const chatWindow = document.getElementById('chat-window');
-const mobileBackBtn = document.getElementById('mobile-back-btn');
-const chatHeaderAvatar = document.getElementById('chat-header-avatar');
-const chatHeaderTitle = document.getElementById('chat-header-title');
-const chatHeaderSubtitle = document.getElementById('chat-header-subtitle');
-const currentChatHeaderInfo = document.getElementById('current-chat-header-info');
+const backToSidebarBtn = document.getElementById('back-to-sidebar-btn');
+const headerAvatar = document.getElementById('header-avatar');
+const headerTitle = document.getElementById('header-title');
+const headerSubtitle = document.getElementById('header-subtitle');
+const activeChatInfo = document.getElementById('active-chat-info');
 
 const messagesContainer = document.getElementById('messages-container');
 const messageForm = document.getElementById('message-form');
 const messageInput = document.getElementById('message-input');
 const sendBtn = document.getElementById('send-btn');
 const imageInput = document.getElementById('image-input');
-const imagePreview = document.getElementById('image-preview');
+const imagePreviewBar = document.getElementById('image-preview-bar');
 const removeImageBtn = document.getElementById('remove-image-btn');
 
 const profileModal = document.getElementById('profile-modal');
@@ -63,7 +60,8 @@ const modalAvatar = document.getElementById('modal-avatar');
 const modalNickname = document.getElementById('modal-nickname');
 const modalBio = document.getElementById('modal-bio');
 const modalDate = document.getElementById('modal-date');
-const editProfileSection = document.getElementById('edit-profile-section');
+const editProfileBlock = document.getElementById('edit-profile-block');
+const actionProfileBlock = document.getElementById('action-profile-block');
 const editAvatarUrl = document.getElementById('edit-avatar-url');
 const editBio = document.getElementById('edit-bio');
 const saveProfileBtn = document.getElementById('save-profile-btn');
@@ -83,7 +81,7 @@ toggleBtn.addEventListener('click', () => {
         toggleText.textContent = 'Уже есть аккаунт?';
         toggleBtn.textContent = 'Войти';
     } else {
-        authTitle.textContent = 'Вход в Telegram Web';
+        authTitle.textContent = 'Вход в аккаунт';
         authBtn.textContent = 'Войти';
         nicknameGroup.classList.add('hidden');
         nicknameInput.required = false;
@@ -114,7 +112,7 @@ authForm.addEventListener('submit', async (e) => {
         if (!res.ok) throw new Error(data.error || 'Ошибка входа');
 
         if (isRegisterMode) {
-            alert('Регистрация успешна! Теперь войдите.');
+            alert('Регистрация успешна! Войдите в аккаунт.');
             toggleBtn.click();
             return;
         }
@@ -156,25 +154,25 @@ logoutBtn.addEventListener('click', () => {
 });
 
 // ====================================================
-// 4. ПЕРЕКЛЮЧЕНИЕ ЧАТОВ (ОБЩИЙ / ЛИЧКА)
+// 4. ПЕРЕКЛЮЧЕНИЕ ЧАТОВ
 // ====================================================
-chatItemGlobal.addEventListener('click', () => {
+globalChatCard.addEventListener('click', () => {
     switchChatToGlobal();
 });
 
 function switchChatToGlobal() {
-    activeChat = { type: 'global', id: null, nickname: 'Общий Чат (Гигачат)' };
+    activeChat = { type: 'global', id: null, nickname: 'Общий чат' };
 
-    document.querySelectorAll('.chat-item').forEach(el => el.classList.remove('active'));
-    chatItemGlobal.classList.add('active');
+    document.querySelectorAll('.chat-card').forEach(el => el.classList.remove('active'));
+    globalChatCard.classList.add('active');
 
-    chatHeaderTitle.textContent = 'Общий Чат (Гигачат)';
-    chatHeaderSubtitle.textContent = '● Все зарегистрированные пользователи';
-    chatHeaderAvatar.className = 'avatar avatar-global';
-    chatHeaderAvatar.style.backgroundImage = '';
-    chatHeaderAvatar.textContent = '🌐';
+    headerTitle.textContent = 'Общий чат';
+    headerSubtitle.textContent = 'Публичная комната';
+    headerAvatar.className = 'avatar';
+    headerAvatar.style.backgroundImage = '';
+    headerAvatar.textContent = '🌐';
 
-    appScreen.classList.add('mobile-active-chat');
+    appScreen.classList.add('mobile-chat-open');
     messagesContainer.innerHTML = '';
 
     socket.emit('get-history', { userCreatedAt: currentUser.created_at });
@@ -183,31 +181,31 @@ function switchChatToGlobal() {
 function switchChatToPrivate(user) {
     activeChat = { type: 'private', id: user.id, nickname: user.nickname, avatar_url: user.avatar_url };
 
-    document.querySelectorAll('.chat-item').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.chat-card').forEach(el => el.classList.remove('active'));
     
-    let chatEl = document.getElementById(`private-chat-item-${user.id}`);
-    if (chatEl) chatEl.classList.add('active');
+    let chatCard = document.getElementById(`direct-card-${user.id}`);
+    if (chatCard) chatCard.classList.add('active');
 
-    chatHeaderTitle.textContent = user.nickname;
-    chatHeaderSubtitle.textContent = '● личный диалог';
-    chatHeaderAvatar.className = 'avatar';
-    
+    headerTitle.textContent = user.nickname;
+    headerSubtitle.textContent = 'Личный диалог';
+    headerAvatar.className = 'avatar';
+
     if (user.avatar_url) {
-        chatHeaderAvatar.style.backgroundImage = `url(${user.avatar_url})`;
-        chatHeaderAvatar.textContent = '';
+        headerAvatar.style.backgroundImage = `url(${user.avatar_url})`;
+        headerAvatar.textContent = '';
     } else {
-        chatHeaderAvatar.style.backgroundImage = '';
-        chatHeaderAvatar.textContent = user.nickname.charAt(0).toUpperCase();
+        headerAvatar.style.backgroundImage = '';
+        headerAvatar.textContent = user.nickname.charAt(0).toUpperCase();
     }
 
-    appScreen.classList.add('mobile-active-chat');
+    appScreen.classList.add('mobile-chat-open');
     messagesContainer.innerHTML = '';
 
     socket.emit('get-private-history', { myId: currentUser.id, otherId: user.id });
 }
 
-mobileBackBtn.addEventListener('click', () => {
-    appScreen.classList.remove('mobile-active-chat');
+backToSidebarBtn.addEventListener('click', () => {
+    appScreen.classList.remove('mobile-chat-open');
 });
 
 // ====================================================
@@ -220,7 +218,7 @@ imageInput.addEventListener('change', (e) => {
     const reader = new FileReader();
     reader.onload = (evt) => {
         attachedImageBase64 = evt.target.result;
-        imagePreview.classList.remove('hidden');
+        imagePreviewBar.classList.remove('hidden');
     };
     reader.readAsDataURL(file);
 });
@@ -228,7 +226,7 @@ imageInput.addEventListener('change', (e) => {
 removeImageBtn.addEventListener('click', () => {
     attachedImageBase64 = null;
     imageInput.value = '';
-    imagePreview.classList.add('hidden');
+    imagePreviewBar.classList.add('hidden');
 });
 
 messageForm.addEventListener('submit', (e) => {
@@ -257,7 +255,7 @@ messageForm.addEventListener('submit', (e) => {
     messageInput.value = '';
     attachedImageBase64 = null;
     imageInput.value = '';
-    imagePreview.classList.add('hidden');
+    imagePreviewBar.classList.add('hidden');
 
     triggerSpamCooldown();
 });
@@ -270,9 +268,8 @@ function triggerSpamCooldown() {
 socket.on('spam-warning', (msg) => alert(msg));
 
 // ====================================================
-// 6. ПРИЕМ СООБЩЕНИЙ И ОБНОВЛЕНИЕ ТАБЛИЦЫ ЧАТОВ
+// 6. ПРИЕМ СООБЩЕНИЙ
 // ====================================================
-
 socket.on('history-loaded', (messages) => {
     if (activeChat.type !== 'global') return;
     messagesContainer.innerHTML = '';
@@ -281,8 +278,8 @@ socket.on('history-loaded', (messages) => {
 });
 
 socket.on('new-message', (msg) => {
-    document.getElementById('global-last-preview').textContent = `${msg.nickname}: ${msg.text || '📷 Фотография'}`;
-    document.getElementById('global-last-time').textContent = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    document.getElementById('global-preview').textContent = `${msg.nickname}: ${msg.text || '📷 Фотография'}`;
+    document.getElementById('global-time').textContent = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
     if (activeChat.type === 'global') {
         renderBubble(msg);
@@ -302,7 +299,7 @@ socket.on('new-private-message', (msg) => {
     const otherId = msg.sender_id == currentUser.id ? msg.receiver_id : msg.sender_id;
     const otherNickname = msg.sender_id == currentUser.id ? activeChat.nickname : msg.sender_nickname;
 
-    ensurePrivateChatItem(otherId, otherNickname, msg.text || '📷 Фотография', msg.created_at);
+    ensureDirectChatCard(otherId, otherNickname, msg.text || '📷 Фотография', msg.created_at);
 
     if (activeChat.type === 'private' && (activeChat.id == msg.sender_id || activeChat.id == msg.receiver_id)) {
         renderPrivateBubble(msg);
@@ -310,37 +307,33 @@ socket.on('new-private-message', (msg) => {
     }
 });
 
-function ensurePrivateChatItem(userId, nickname, lastText, createdAt) {
-    let chatEl = document.getElementById(`private-chat-item-${userId}`);
-
+function ensureDirectChatCard(userId, nickname, lastText, createdAt) {
+    let card = document.getElementById(`direct-card-${userId}`);
     const timeStr = createdAt ? new Date(createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
 
-    if (!chatEl) {
-        chatEl = document.createElement('div');
-        chatEl.id = `private-chat-item-${userId}`;
-        chatEl.className = 'chat-item';
-        chatEl.dataset.type = 'private';
-        chatEl.dataset.id = userId;
+    if (!card) {
+        card = document.createElement('div');
+        card.id = `direct-card-${userId}`;
+        card.className = 'chat-card';
+        card.dataset.id = userId;
 
-        chatEl.innerHTML = `
-            <div class="avatar" id="avatar-item-${userId}">${nickname.charAt(0).toUpperCase()}</div>
-            <div class="chat-item-info">
-                <div class="chat-item-top">
-                    <span class="chat-name">${escapeHtml(nickname)}</span>
-                    <span class="chat-time" id="time-item-${userId}">${timeStr}</span>
+        card.innerHTML = `
+            <div class="avatar">${nickname.charAt(0).toUpperCase()}</div>
+            <div class="card-info">
+                <div class="card-title-row">
+                    <span class="card-title">${escapeHtml(nickname)}</span>
+                    <span class="card-time" id="card-time-${userId}">${timeStr}</span>
                 </div>
-                <div class="chat-item-bottom">
-                    <span class="chat-preview" id="preview-item-${userId}">${escapeHtml(lastText)}</span>
-                </div>
+                <span class="card-preview" id="card-preview-${userId}">${escapeHtml(lastText)}</span>
             </div>
         `;
 
-        chatEl.onclick = () => switchChatToPrivate({ id: userId, nickname: nickname });
-        privateChatsContainer.prepend(chatEl);
+        card.onclick = () => switchChatToPrivate({ id: userId, nickname: nickname });
+        directChatsList.prepend(card);
     } else {
-        document.getElementById(`preview-item-${userId}`).textContent = lastText;
-        if (timeStr) document.getElementById(`time-item-${userId}`).textContent = timeStr;
-        privateChatsContainer.prepend(chatEl);
+        document.getElementById(`card-preview-${userId}`).textContent = lastText;
+        if (timeStr) document.getElementById(`card-time-${userId}`).textContent = timeStr;
+        directChatsList.prepend(card);
     }
 }
 
@@ -382,21 +375,15 @@ function scrollToBottom() {
 }
 
 // ====================================================
-// 7. МОДАЛЬНОЕ ОКНО ПРОФИЛЯ
+// 7. ЧЕТКАЯ ЛОГИКА ПРОФИЛЯ ПОЛЬЗОВАТЕЛЯ
 // ====================================================
-myProfileBtn.addEventListener('click', () => {
-    openMyProfile();
-});
 
-currentChatHeaderInfo.addEventListener('click', () => {
-    if (activeChat.type === 'private') {
-        openProfileById(activeChat.id);
-    }
-});
+// Открытие СВОЕГО профиля (ТОЛЬКО для редактирования)
+myProfileTrigger.addEventListener('click', () => {
+    if (!currentUser) return;
 
-function openMyProfile() {
     modalNickname.textContent = currentUser.nickname;
-    modalBio.textContent = currentUser.bio || 'Описание отсутствует';
+    modalBio.textContent = currentUser.bio || 'Пока ничего о себе не написали.';
     modalDate.textContent = `Зарегистрирован: ${new Date(currentUser.created_at).toLocaleDateString()}`;
 
     if (currentUser.avatar_url) {
@@ -410,47 +397,13 @@ function openMyProfile() {
     editAvatarUrl.value = currentUser.avatar_url || '';
     editBio.value = currentUser.bio || '';
 
-    editProfileSection.classList.remove('hidden');
-    startPrivateBtn.classList.add('hidden');
+    // Включаем редактирование, отключаем кнопку лички
+    editProfileBlock.classList.remove('hidden');
+    actionProfileBlock.classList.add('hidden');
     profileModal.classList.remove('hidden');
-}
+});
 
-async function openProfileById(userId) {
-    if (userId == currentUser.id) return openMyProfile();
-
-    try {
-        const res = await fetch(`/api/user/${userId}`);
-        const data = await res.json();
-        if (!res.ok) return alert('Не удалось загрузить профиль');
-
-        const user = data.user;
-        modalNickname.textContent = user.nickname;
-        modalBio.textContent = user.bio || 'Пользователь ничего о себе не написал.';
-        modalDate.textContent = `Зарегистрирован: ${new Date(user.created_at).toLocaleDateString()}`;
-
-        if (user.avatar_url) {
-            modalAvatar.style.backgroundImage = `url(${user.avatar_url})`;
-            modalAvatar.textContent = '';
-        } else {
-            modalAvatar.style.backgroundImage = '';
-            modalAvatar.textContent = user.nickname.charAt(0).toUpperCase();
-        }
-
-        editProfileSection.classList.add('hidden');
-        startPrivateBtn.classList.remove('hidden');
-
-        startPrivateBtn.onclick = () => {
-            profileModal.classList.add('hidden');
-            ensurePrivateChatItem(user.id, user.nickname, 'Начать диалог', null);
-            switchChatToPrivate(user);
-        };
-
-        profileModal.classList.remove('hidden');
-    } catch (err) {
-        console.error(err);
-    }
-}
-
+// Сохранение своего профиля
 saveProfileBtn.addEventListener('click', async () => {
     const avatarUrl = editAvatarUrl.value.trim();
     const bio = editBio.value.trim();
@@ -467,10 +420,55 @@ saveProfileBtn.addEventListener('click', async () => {
             currentUser.bio = bio;
             updateMyProfileHeader();
             profileModal.classList.add('hidden');
-            alert('Профиль обновлен!');
+            alert('Профиль сохранен!');
         }
     } catch (err) {
-        alert('Ошибка сохранения');
+        alert('Ошибка сохранения профиля');
+    }
+});
+
+// Открытие ЧУЖОГО профиля (ТОЛЬКО для лички)
+async function openProfileById(userId) {
+    if (!userId) return;
+    if (userId == currentUser.id) return myProfileTrigger.click();
+
+    try {
+        const res = await fetch(`/api/user/${userId}`);
+        const data = await res.json();
+        if (!res.ok) return alert('Не удалось загрузить профиль');
+
+        const user = data.user;
+        modalNickname.textContent = user.nickname;
+        modalBio.textContent = user.bio || 'Пользователь пока ничего не написал о себе.';
+        modalDate.textContent = `Зарегистрирован: ${new Date(user.created_at).toLocaleDateString()}`;
+
+        if (user.avatar_url) {
+            modalAvatar.style.backgroundImage = `url(${user.avatar_url})`;
+            modalAvatar.textContent = '';
+        } else {
+            modalAvatar.style.backgroundImage = '';
+            modalAvatar.textContent = user.nickname.charAt(0).toUpperCase();
+        }
+
+        // Отключаем поля редактирования, показываем ТОЛЬКО кнопку лички
+        editProfileBlock.classList.add('hidden');
+        actionProfileBlock.classList.remove('hidden');
+
+        startPrivateBtn.onclick = () => {
+            profileModal.classList.add('hidden');
+            ensureDirectChatCard(user.id, user.nickname, 'Начать диалог', null);
+            switchChatToPrivate(user);
+        };
+
+        profileModal.classList.remove('hidden');
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+activeChatInfo.addEventListener('click', () => {
+    if (activeChat.type === 'private') {
+        openProfileById(activeChat.id);
     }
 });
 
