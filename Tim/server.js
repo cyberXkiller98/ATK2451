@@ -2,6 +2,7 @@ require('dotenv').config();
 
 const express = require('express');
 const http = require('http');
+const path = require('path'); // Подключаем встроенный модуль path
 const { Server } = require('socket.io');
 const { createClient } = require('@supabase/supabase-js');
 const bcrypt = require('bcryptjs');
@@ -14,13 +15,14 @@ const io = new Server(server);
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 
 app.use(express.json());
-app.use(express.static('public'));
+
+// НАДЕЖНЫЙ ПУТЬ К ПАПКЕ PUBLIC ДЛЯ LINUX (Используем path.join)
+app.use(express.static(path.join(__dirname, 'public')));
 
 // ====================================================
 // REST API: РЕГИСТРАЦИЯ И ВХОД
 // ====================================================
 
-// 1. Регистрация пользователя
 app.post('/api/register', async (req, res) => {
     const { email, nickname, password } = req.body;
 
@@ -29,7 +31,6 @@ app.post('/api/register', async (req, res) => {
     }
 
     try {
-        // Проверяем, существует ли уже такой email
         const { data: existingUser } = await supabase
             .from('users')
             .select('id')
@@ -40,10 +41,8 @@ app.post('/api/register', async (req, res) => {
             return res.status(400).json({ error: 'Пользователь с таким Email уже существует' });
         }
 
-        // Хешируем пароль для безопасности (10 солевых раундов)
         const passwordHash = await bcrypt.hash(password, 10);
 
-        // Сохраняем пользователя в Supabase
         const { error } = await supabase
             .from('users')
             .insert([{ email, nickname, password_hash: passwordHash }]);
@@ -58,7 +57,6 @@ app.post('/api/register', async (req, res) => {
     }
 });
 
-// 2. Вход пользователя
 app.post('/api/login', async (req, res) => {
     const { email, password } = req.body;
 
@@ -67,7 +65,6 @@ app.post('/api/login', async (req, res) => {
     }
 
     try {
-        // Ищем пользователя по email
         const { data: user, error } = await supabase
             .from('users')
             .select('*')
@@ -78,14 +75,12 @@ app.post('/api/login', async (req, res) => {
             return res.status(400).json({ error: 'Неверный Email или пароль' });
         }
 
-        // Сравниваем введенный пароль с захешированным в базе
         const isPasswordValid = await bcrypt.compare(password, user.password_hash);
 
         if (!isPasswordValid) {
             return res.status(400).json({ error: 'Неверный Email или пароль' });
         }
 
-        // Отправляем успешный ответ (БЕЗ пароля)
         return res.json({
             user: {
                 id: user.id,
@@ -107,10 +102,8 @@ app.post('/api/login', async (req, res) => {
 io.on('connection', (socket) => {
     console.log(`[Socket] Пользователь подключен: ${socket.id}`);
 
-    // Отправка истории сообщений при запросе
     socket.on('get-history', async () => {
         try {
-            // Получаем последние 50 сообщений из Supabase
             const { data: messages, error } = await supabase
                 .from('messages')
                 .select('*')
@@ -125,14 +118,12 @@ io.on('connection', (socket) => {
         }
     });
 
-    // Обработка нового сообщения от пользователя
     socket.on('send-message', async (data) => {
         const { userId, nickname, text } = data;
 
         if (!text || !nickname) return;
 
         try {
-            // 1. Сохраняем сообщение в базу данных Supabase
             const { data: newMessage, error } = await supabase
                 .from('messages')
                 .insert([{ user_id: userId, nickname, text }])
@@ -141,7 +132,6 @@ io.on('connection', (socket) => {
 
             if (error) throw error;
 
-            // 2. Рассылаем новое сообщение ВСЕМ подключенным клиентам
             io.emit('new-message', newMessage);
 
         } catch (err) {
