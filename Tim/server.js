@@ -14,7 +14,7 @@ const io = new Server(server);
 // Подключение к Supabase
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 
-// Настройка приема больших данных (чтобы передавать изображения в Base64)
+// Настройка приема больших данных (для передача фотографий в Base64)
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
@@ -24,12 +24,12 @@ app.use(express.static(path.join(__dirname, 'public')));
 // ----------------------------------------------------
 // АНТИСПАМ: Карта хранения времени последнего сообщения
 // ----------------------------------------------------
-const lastMessageTimes = new Map(); // userId -> timestamp
+const lastMessageTimes = new Map();
 
 function isSpamming(userId) {
     const now = Date.now();
     const lastTime = lastMessageTimes.get(userId) || 0;
-    if (now - lastTime < 1500) { // Ограничение 1.5 секунды
+    if (now - lastTime < 1500) {
         return true;
     }
     lastMessageTimes.set(userId, now);
@@ -40,7 +40,6 @@ function isSpamming(userId) {
 // REST API: АВТОРИЗАЦИЯ И ПРОФИЛИ
 // ====================================================
 
-// 1. Регистрация
 app.post('/api/register', async (req, res) => {
     const { email, nickname, password } = req.body;
 
@@ -75,7 +74,6 @@ app.post('/api/register', async (req, res) => {
     }
 });
 
-// 2. Вход
 app.post('/api/login', async (req, res) => {
     const { email, password } = req.body;
 
@@ -117,7 +115,6 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// 3. Получение чужого профиля по ID
 app.get('/api/user/:id', async (req, res) => {
     try {
         const { data: user, error } = await supabase
@@ -136,7 +133,6 @@ app.get('/api/user/:id', async (req, res) => {
     }
 });
 
-// 4. Обновление собственного профиля (аватар / о себе)
 app.post('/api/user/update-profile', async (req, res) => {
     const { userId, avatarUrl, bio } = req.body;
 
@@ -164,7 +160,6 @@ app.post('/api/user/update-profile', async (req, res) => {
 io.on('connection', (socket) => {
     console.log(`[Socket] Пользователь подключен: ${socket.id}`);
 
-    // Вход пользователя в личную комнату Socket.io
     socket.on('join-user-room', (userId) => {
         if (!userId) return;
         const roomName = `user_${userId}`;
@@ -172,11 +167,6 @@ io.on('connection', (socket) => {
         console.log(`[Socket] Пользователь ${userId} вошел в комнату ${roomName}`);
     });
 
-    // ----------------------------------------------------
-    // ОБЩИЙ ЧАТ (ГИГАЧАТ)
-    // ----------------------------------------------------
-
-    // Получение истории общего чата (ТОЛЬКО ПОСЛЕ ДАТЫ РЕГИСТРАЦИИ ПОЛЬЗОВАТЕЛЯ)
     socket.on('get-history', async (data) => {
         const userCreatedAt = data?.userCreatedAt;
 
@@ -187,7 +177,6 @@ io.on('connection', (socket) => {
                 .order('created_at', { ascending: true })
                 .limit(50);
 
-            // Фильтр: сообщения только созданные ПОСЛЕ даты регистрации пользователя
             if (userCreatedAt) {
                 query = query.gte('created_at', userCreatedAt);
             }
@@ -202,12 +191,101 @@ io.on('connection', (socket) => {
         }
     });
 
-    // Отправка сообщения в общий чат (с антиспамом и картинками)
     socket.on('send-message', async (data) => {
         const { userId, nickname, text, imageUrl } = data;
 
         if (!userId || (!text && !imageUrl)) return;
 
-        // Проверка Антиспама
         if (isSpamming(userId)) {
-            ret
+            return socket.emit('spam-warning', 'Слишком часто! Подождите 1.5 секунды.');
+        }
+
+        try {
+            const { data: newMessage, error } = await supabase
+                .from('messages')
+                .insert([{ 
+                    user_id: userId, 
+                    nickname: nickname, 
+                    text: text || '', 
+                    image_url: imageUrl || '' 
+                }])
+                .select()
+                .single();
+
+            if (error) throw error;
+
+            io.emit('new-message', newMessage);
+
+        } catch (err) {
+            console.error('Ошибка отправки сообщения в общий чат:', err);
+        }
+    });
+
+    socket.on('get-private-history', async (data) => {
+        const { myId, otherId } = data;
+        if (!myId || !otherId) return;
+
+        try {
+            const { data: messages, error } = await supabase
+                .from('private_messages')
+                .select('*')
+                .or(`and(sender_id.eq.${myId},receiver_id.eq.${otherId}),and(sender_id.eq.${otherId},receiver_id.eq.${myId})`)
+                .order('created_at', { ascending: true })
+                .limit(100);
+
+            if (!error && messages) {
+                socket.emit('private-history-loaded', { otherId, messages });
+            }
+        } catch (err) {
+            console.error('Ошибка загрузки личных сообщений:', err);
+        }
+    });
+
+    socket.on('send-private-message', async (data) => {
+        const { senderId, receiverId, senderNickname, text, imageUrl } = data;
+
+        if (!senderId || !receiverId || (!text && !imageUrl)) return;
+
+        if (isSpamming(senderId)) {
+            return socket.emit('spam-warning', 'Слишком часто! Подождите 1.5 секунды.');
+        }
+
+        try {
+            const { data: newPrivateMsg, error } = await supabase
+                .from('private_messages')
+                .insert([{
+                    sender_id: senderId,
+                    receiver_id: receiverId,
+                    sender_nickname: senderNickname,
+                    text: text || '',
+                    image_url: imageUrl || ''
+                }])
+                .select()
+                .single();
+
+            if (error) throw error;
+
+            io.to(`user_${senderId}`).emit('new-private-message', newPrivateMsg);
+            io.to(`user_${receiverId}`).emit('new-private-message', newPrivateMsg);
+
+        } catch (err) {
+            console.error('Ошибка отправки личного сообщения:', err);
+        }
+    });
+
+    socket.on('typing-private', (data) => {
+        const { senderNickname, receiverId } = data;
+        if (receiverId) {
+            io.to(`user_${receiverId}`).emit('user-typing', { senderNickname });
+        }
+    });
+
+    socket.on('disconnect', () => {
+        console.log(`[Socket] Пользователь отключился: ${socket.id}`);
+    });
+});
+
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+    console.log(`🚀 Сервер запущен на порту ${PORT}`);
+});
