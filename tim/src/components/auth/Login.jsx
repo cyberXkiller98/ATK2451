@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
-import { loginUser } from '../../services/authService';
+import { loginUser, registerUser } from '../../services/authService';
 
 export default function Login({ onSwitchToRegister, onLoginSuccess }) {
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -13,18 +12,17 @@ export default function Login({ onSwitchToRegister, onLoginSuccess }) {
     e.preventDefault();
     setError('');
 
-    if (!email || !password) {
-      setError('Пожалуйста, заполните все поля');
+    if (!identifier.trim()) {
+      setError('Введите имя пользователя');
       return;
     }
 
     setLoading(true);
-
     try {
-      await loginUser(email, password);
-      if (onLoginSuccess) onLoginSuccess();
+      const res = await loginUser(identifier, password);
+      if (onLoginSuccess) onLoginSuccess(res.user);
     } catch (err) {
-      setError(err.message || 'Неверный e-mail или пароль');
+      setError(err.message || 'Ошибка входа');
     } finally {
       setLoading(false);
     }
@@ -32,12 +30,12 @@ export default function Login({ onSwitchToRegister, onLoginSuccess }) {
 
   return (
     <div className="min-h-screen bg-[#080711] text-slate-100 flex items-center justify-center p-4 md:p-8 font-sans relative overflow-x-hidden">
-      
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-600/15 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-indigo-600/15 rounded-full blur-3xl pointer-events-none" />
 
       <div className="relative w-full max-w-4xl bg-[#0f0d22] border border-[#242048] rounded-3xl shadow-2xl overflow-hidden grid grid-cols-1 lg:grid-cols-12">
         
+        {/* Левая колонка */}
         <div className="lg:col-span-5 p-8 lg:p-12 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-[#242048] bg-gradient-to-b from-purple-950/20 to-transparent">
           <div>
             <div className="relative w-20 h-20 mb-6 mx-auto lg:mx-0">
@@ -51,13 +49,13 @@ export default function Login({ onSwitchToRegister, onLoginSuccess }) {
               С возвращением в <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-indigo-300">Messenger</span>
             </h1>
             <p className="text-slate-400 text-xs mt-2 leading-relaxed">
-              Войдите в свой профиль, чтобы продолжить переписку и проверить новые сообщения.
+              Войдите по своему никнейму, чтобы продолжить общение.
             </p>
           </div>
         </div>
 
+        {/* Правая колонка */}
         <div className="lg:col-span-7 p-8 lg:p-12 flex flex-col justify-center">
-          
           <div className="flex justify-center mb-4">
             <div className="w-12 h-12 rounded-full bg-purple-600/20 border border-purple-500/40 flex items-center justify-center text-purple-300 text-sm shadow-lg shadow-purple-500/20">
               🔑
@@ -66,7 +64,7 @@ export default function Login({ onSwitchToRegister, onLoginSuccess }) {
 
           <div className="text-center mb-6">
             <h2 className="text-2xl font-bold text-white">Вход в аккаунт</h2>
-            <p className="text-slate-400 text-xs mt-1">Введите ваши данные для входа</p>
+            <p className="text-slate-400 text-xs mt-1">Введите ваше имя пользователя</p>
           </div>
 
           {error && (
@@ -76,36 +74,15 @@ export default function Login({ onSwitchToRegister, onLoginSuccess }) {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1 ml-1">E-mail</label>
+              <label className="block text-xs font-medium text-slate-400 mb-1 ml-1">Имя пользователя (никнейм)</label>
               <input 
-                type="email" 
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="timur@example.com"
-                className="w-full bg-[#14122b] border border-[#242048] rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-purple-500 transition-colors"
+                type="text" 
+                value={identifier}
+                onChange={(e) => setIdentifier(e.target.value)}
+                placeholder="timur_dev"
+                className="w-full bg-[#14122b] border border-[#242048] rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-purple-500"
               />
-            </div>
-
-            <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1 ml-1">Пароль</label>
-              <div className="relative">
-                <input 
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••••••"
-                  className="w-full bg-[#14122b] border border-[#242048] rounded-xl pl-4 pr-10 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-purple-500 transition-colors"
-                />
-                <button 
-                  type="button" 
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-2.5 text-slate-400 text-xs"
-                >
-                  {showPassword ? '🙈' : '👁️'}
-                </button>
-              </div>
             </div>
 
             <button 
@@ -124,17 +101,13 @@ export default function Login({ onSwitchToRegister, onLoginSuccess }) {
 
             <div className="p-3 bg-[#14122b] border border-[#242048] rounded-xl text-center text-xs text-slate-300">
               Ещё нет аккаунта?{' '}
-              <button type="button" onClick={onSwitchToRegister} className="text-purple-400 font-semibold hover:underline ml-1">
+              <button type="button" onClick={onSwitchToRegister} className="text-purple-400 font-semibold hover:underline ml-1 cursor-pointer">
                 Зарегистрироваться
               </button>
             </div>
-
           </form>
-
         </div>
-
       </div>
-
     </div>
   );
 }
