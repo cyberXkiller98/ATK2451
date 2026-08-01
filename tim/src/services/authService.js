@@ -1,71 +1,50 @@
 import { supabase } from './supabaseClient';
 
-// Регистрация пользователя
-export const registerUser = async (email, password, username) => {
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
-    options: {
-      data: {
-        username,
-      },
-    },
-  });
-
-  if (error) {
-    throw new Error(error.message);
+// 1. Вход или Регистрация просто по никнейму (@username)
+export const loginOrCreateUser = async (usernameInput) => {
+  const cleanUsername = usernameInput.trim().toLowerCase().replace('@', '');
+  
+  if (!cleanUsername || cleanUsername.length < 3) {
+    throw new Error('Юзернейм должен быть не менее 3 символов');
   }
 
-  return data;
+  // Проверяем, есть ли такой юзер в таблице profiles
+  let { data: profile, error: fetchError } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('username', cleanUsername)
+    .maybeSingle();
+
+  if (fetchError) throw fetchError;
+
+  // Если пользователя нет — создаем его автоматически
+  if (!profile) {
+    const { data: newProfile, error: createError } = await supabase
+      .from('profiles')
+      .insert({
+        username: cleanUsername,
+        full_name: cleanUsername,
+        is_online: true
+      })
+      .select()
+      .single();
+
+    if (createError) throw createError;
+    profile = newProfile;
+  }
+
+  // Сохраняем пользователя в память браузера (localStorage)
+  localStorage.setItem('chat_user', JSON.stringify(profile));
+  return profile;
 };
 
-// Вход пользователя
-export const loginUser = async (email, password) => {
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  });
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  return data;
+// 2. Получить текущего вошедшего пользователя из памяти браузера
+export const getCurrentUser = () => {
+  const userStr = localStorage.getItem('chat_user');
+  return userStr ? JSON.parse(userStr) : null;
 };
 
-// Выход из аккаунта
-export const logoutUser = async () => {
-  const { error } = await supabase.auth.signOut();
-
-  if (error) {
-    throw new Error(error.message);
-  }
-};
-
-// Получить текущего пользователя
-export const getCurrentUser = async () => {
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  return user;
-};
-
-// Получить текущую сессию
-export const getCurrentSession = async () => {
-  const {
-    data: { session },
-    error,
-  } = await supabase.auth.getSession();
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  return session;
+// 3. Выход из аккаунта
+export const logoutUser = () => {
+  localStorage.removeItem('chat_user');
 };
