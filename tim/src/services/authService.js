@@ -1,50 +1,68 @@
 import { supabase } from './supabaseClient';
 
-// 1. Вход или Регистрация просто по никнейму (@username)
-export const loginOrCreateUser = async (usernameInput) => {
-  const cleanUsername = usernameInput.trim().toLowerCase().replace('@', '');
+// Регистрация просто по нику в таблице profiles
+export const registerUser = async (emailOrUsername, password, customUsername) => {
+  const username = (customUsername || emailOrUsername).trim().toLowerCase().replace('@', '');
   
-  if (!cleanUsername || cleanUsername.length < 3) {
+  if (!username || username.length < 3) {
     throw new Error('Юзернейм должен быть не менее 3 символов');
   }
 
-  // Проверяем, есть ли такой юзер в таблице profiles
-  let { data: profile, error: fetchError } = await supabase
+  // Проверяем, есть ли уже такой юзер
+  const { data: existing } = await supabase
     .from('profiles')
     .select('*')
-    .eq('username', cleanUsername)
+    .eq('username', username)
     .maybeSingle();
 
-  if (fetchError) throw fetchError;
-
-  // Если пользователя нет — создаем его автоматически
-  if (!profile) {
-    const { data: newProfile, error: createError } = await supabase
-      .from('profiles')
-      .insert({
-        username: cleanUsername,
-        full_name: cleanUsername,
-        is_online: true
-      })
-      .select()
-      .single();
-
-    if (createError) throw createError;
-    profile = newProfile;
+  if (existing) {
+    throw new Error('Такое имя пользователя уже занято');
   }
 
-  // Сохраняем пользователя в память браузера (localStorage)
-  localStorage.setItem('chat_user', JSON.stringify(profile));
-  return profile;
+  // Создаем профиль
+  const { data, error } = await supabase
+    .from('profiles')
+    .insert({
+      username: username,
+      full_name: username,
+      is_online: true
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+
+  // Сохраняем сессию в localStorage
+  localStorage.setItem('chat_user', JSON.stringify(data));
+  return { user: data };
 };
 
-// 2. Получить текущего вошедшего пользователя из памяти браузера
+// Вход просто по нику (или email)
+export const loginUser = async (emailOrUsername, password) => {
+  const username = emailOrUsername.trim().toLowerCase().replace('@', '');
+
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('username', username)
+    .maybeSingle();
+
+  if (error || !data) {
+    throw new Error('Пользователь не найден. Проверьте имя.');
+  }
+
+  // Сохраняем сессию в localStorage
+  localStorage.setItem('chat_user', JSON.stringify(data));
+  return { user: data };
+};
+
+// Получить текущего залогиненного юзера
 export const getCurrentUser = () => {
   const userStr = localStorage.getItem('chat_user');
   return userStr ? JSON.parse(userStr) : null;
 };
 
-// 3. Выход из аккаунта
+// Выход
 export const logoutUser = () => {
   localStorage.removeItem('chat_user');
 };
