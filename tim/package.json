@@ -1,5 +1,6 @@
 {
   "name": "tim-messenger",
+  "private": true,
   "version": "1.0.0",
   "type": "module",
   "scripts": {
@@ -8,12 +9,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.0.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "@supabase/supabase-js": "^2.49.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {
-    "@vitejs/plugin-react": "^4.0.0",
-    "vite": "^5.0.0"
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.3",
+    "@vitejs/plugin-react": "^4.3.1",
+    "vite": "^5.3.4"
   }
 }
