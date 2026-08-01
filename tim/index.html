@@ -2,11 +2,14 @@
 <html lang="ru">
   <head>
     <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tim Messenger</title>
+    <title>Messenger</title>
+    
+    <!-- Подключаем Tailwind CSS через CDN (гарантирует работу всех стилей и анимаций) -->
+    <script src="https://cdn.tailwindcss.com"></script>
   </head>
-
-  <body>
+  <body class="bg-[#080711] text-slate-100 antialiased selection:bg-purple-500 selection:text-white">
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
